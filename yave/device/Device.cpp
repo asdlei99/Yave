@@ -208,6 +208,8 @@ static void print_properties(const DeviceProperties& properties) {
 
 Device::ScopedDevice::~ScopedDevice() {
 	vkDestroyDevice(device, nullptr);
+	Y_TODO(move this somewhere else ?)
+	device::main_device = nullptr;
 }
 
 
@@ -238,8 +240,6 @@ Device::Device(Instance& instance) :
 
 Device::~Device() {
 	y_always_assert(device::main_device == this, "Incorrect device");
-	device::main_device = nullptr;
-
 	_resources = DeviceResources();
 	_lifetime_manager.stop_async_collection();
 
