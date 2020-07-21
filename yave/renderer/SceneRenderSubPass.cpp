@@ -51,6 +51,14 @@ SceneRenderSubPass SceneRenderSubPass::create(FrameGraphPassBuilder& builder, co
 	return pass;
 }
 
+
+
+static math::Vec3 probe_position(usize index) {
+	const math::Vec3 uvw = math::Vec3(index / 100, (index / 10) % 10, index % 10) * 0.1f;
+	return (uvw - 0.5f) * 2000.0f;
+	//return aabb.min() + aabb.extent() * uvw;
+}
+
 static usize render_world(const SceneRenderSubPass* sub_pass, RenderPassRecorder& recorder, const FrameGraphPass* pass, usize index = 0) {
 	y_profile();
 	const auto region = recorder.region("Scene");
@@ -69,8 +77,26 @@ static usize render_world(const SceneRenderSubPass* sub_pass, RenderPassRecorder
 		++index;
 	}
 
+
+	{
+		const auto mat = recorder.device()->device_resources()[DeviceResources::EmptyMaterial];
+		const auto mat_templ = mat->material_template();
+		recorder.bind_material(mat_templ, {descriptor_set, mat->descriptor_set()});
+		const auto mesh = recorder.device()->device_resources()[DeviceResources::SphereMesh];
+		recorder.bind_buffers(TriangleSubBuffer(mesh->triangle_buffer()), VertexSubBuffer(mesh->vertex_buffer()));
+		VkDrawIndexedIndirectCommand indirect = mesh->indirect_data();
+		indirect.firstInstance = index;
+		indirect.instanceCount = 1000;
+		recorder.draw(indirect);
+		for(usize i = 0; i != 1000; ++i) {
+			transform_mapping[index] = math::Transform<>(probe_position(i), math::Quaternion<>(), math::Vec3(10.0f));
+			++index;
+		}
+	}
+
 	return index;
 }
+
 
 void SceneRenderSubPass::render(RenderPassRecorder& recorder, const FrameGraphPass* pass) const {
 	// fill render data

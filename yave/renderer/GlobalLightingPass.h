@@ -19,35 +19,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **********************************/
-#ifndef YAVE_RENDERER_RENDERER_H
-#define YAVE_RENDERER_RENDERER_H
 
-#include "ShadowMapPass.h"
-#include "ToneMappingPass.h"
+#ifndef YAVE_RENDERER_GLOBALLIGHTINGPASS_H
+#define YAVE_RENDERER_GLOBALLIGHTINGPASS_H
+
+#include "LightingPass.h"
 
 namespace yave {
 
-struct RendererSettings {
-	ToneMappingSettings tone_mapping;
-	ShadowMapPassSettings shadow_map;
+struct GlobalLightingPass {
+	FrameGraphImageId lit;
+	FrameGraphTypedBufferId<uniform::Surfel> surfel_buffer;
+	FrameGraphTypedBufferId<uniform::SH> sh_buffer;
+
+	static GlobalLightingPass create(FrameGraph& framegraph, const GBufferPass& gbuffer);
 };
 
-struct DefaultRenderer {
-	GBufferPass gbuffer;
-	LightingPass lighting;
-	ToneMappingPass tone_mapping;
-
-	FrameGraphImageId color;
-	FrameGraphImageId depth;
-
-	FrameGraphImageId gi;
-
-	static DefaultRenderer create(FrameGraph& framegraph,
-								  const SceneView& view,
-								  const math::Vec2ui& size,
-								  const RendererSettings& settings = RendererSettings());
-};
 
 }
 
-#endif // YAVE_RENDERER_RENDERER_H
+#endif // YAVE_RENDERER_GLOBALLIGHTINGPASS_H

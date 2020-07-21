@@ -1,0 +1,54 @@
+#version 450
+
+#include "lib/lighting.glsl"
+#include "lib/gbuffer.glsl"
+#include "lib/sh.glsl"
+
+layout(local_size_x = 1, local_size_y = 1) in;
+
+layout(set = 0, binding = 0) uniform sampler2D in_depth;
+layout(set = 0, binding = 1) uniform sampler2D in_lit;
+
+layout(set = 0, binding = 2) uniform CameraData {
+	Camera camera;
+};
+
+layout(set = 0, binding = 3) buffer SHBuffer {
+	SH probes[];
+};
+
+layout(push_constant) uniform PushConstants {
+	uint index;
+};
+
+void main() {
+	const vec3 probe_position = camera.position;
+	SH sh = probes[index];
+
+	float total = 0.0;
+	for(uint x = 0; x != 8; ++x) {
+		for(uint y = 0; y != 8; ++y) {
+			const ivec2 coord = ivec2(x, y);
+			const vec2 uv = vec2(coord + 0.5) / vec2(8.0);
+			const float depth = texelFetch(in_depth, coord, 0).x;
+
+			if(is_OOB(depth)) {
+				continue;
+			}
+
+			const vec3 irr = texelFetch(in_lit, coord, 0).rgb;
+
+			const vec3 world_pos = unproject(uv, depth, camera.inv_view_proj);
+			const vec3 dir = normalize(world_pos - probe_position);
+			const SH s = compute_sh(irr, dir);
+			sh = add_sh(sh, s);
+			++total;
+		}
+	}
+
+	if(total > 0.0) {
+		probes[index] = mul_sh(sh, 1.0 / total);
+	}
+}
+
+

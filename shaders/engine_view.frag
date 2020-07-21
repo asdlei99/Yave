@@ -9,10 +9,11 @@ layout(set = 0, binding = 0) uniform Target {
 };
 
 layout(set = 0, binding = 1) uniform sampler2D in_final;
-layout(set = 0, binding = 2) uniform sampler2D in_depth;
-layout(set = 0, binding = 3) uniform sampler2D in_color;
-layout(set = 0, binding = 4) uniform sampler2D in_normal;
+layout(set = 0, binding = 2) uniform sampler2D in_color;
+layout(set = 0, binding = 3) uniform sampler2D in_normal;
+layout(set = 0, binding = 4) uniform sampler2D in_gi;
 
+layout(set = 0, binding = 5) uniform sampler2D in_depth;
 
 layout(location = 0) in vec2 in_uv;
 
@@ -30,6 +31,7 @@ void main() {
 
 	const float depth = texelFetch(in_depth, coord, 0).r;
 	const vec3 final = texelFetch(in_final, coord, 0).rgb;
+	const vec3 gi = texelFetch(in_gi, coord, 0).rgb;
 
 	vec3 color = final;
 
@@ -42,6 +44,8 @@ void main() {
 	} else if(target_index == 4) {
 		color = vec3(roughness);
 	} else if(target_index == 5) {
+		color = gi;
+	} else if(target_index == 6) {
 		color = vec3(pow(depth, 0.35));
 	}
 

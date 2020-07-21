@@ -43,6 +43,8 @@ class EngineView final : public Widget, public ContextLinked {
 			Metallic,
 			Roughness,
 
+			GI,
+
 			Depth,
 
 			MaxRenderViews

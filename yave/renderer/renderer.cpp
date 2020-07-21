@@ -22,6 +22,8 @@ SOFTWARE.
 
 #include "renderer.h"
 
+#include "GlobalLightingPass.h"
+
 namespace yave {
 
 DefaultRenderer DefaultRenderer::create(FrameGraph& framegraph, const SceneView& view, const math::Vec2ui& size, const RendererSettings& settings) {
@@ -35,6 +37,8 @@ DefaultRenderer DefaultRenderer::create(FrameGraph& framegraph, const SceneView&
 
 	renderer.color = renderer.tone_mapping.tone_mapped;
 	renderer.depth = renderer.gbuffer.depth;
+
+	renderer.gi = GlobalLightingPass::create(framegraph, renderer.gbuffer).lit;
 
 	return renderer;
 }

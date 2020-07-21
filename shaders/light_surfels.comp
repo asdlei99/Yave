@@ -1,0 +1,64 @@
+#version 450
+
+#include "lib/lighting.glsl"
+#include "lib/gbuffer.glsl"
+#include "lib/sh.glsl"
+
+layout(local_size_x = 64, local_size_y = 1) in;
+
+layout(set = 0, binding = 0) readonly buffer Surfels {
+	Surfel surfels[];
+};
+
+layout(set = 0, binding = 1) writeonly buffer Irradiance {
+	vec3 irradiance[];
+};
+
+layout(set = 0, binding = 2) readonly buffer PointLights {
+	PointLight point_lights[];
+};
+
+layout(set = 0, binding = 3) readonly buffer SpotLights {
+	SpotLight spot_lights[];
+};
+
+layout(push_constant) uniform PushConstants {
+	uint point_count;
+	uint spot_count;
+	uint surfel_count;
+};
+
+
+void main() {
+	const Surfel surfel = surfels[gl_GlobalInvocationID.x];
+
+	vec3 irr = vec3(0.0);
+
+	for(uint i = 0; i != point_count; ++i) {
+		const PointLight light = point_lights[i];
+		vec3 light_dir = light.position - surfel.position;
+		const float distance = length(light_dir);
+		light_dir /= distance;
+		const float att = attenuation(distance, light.radius, light.falloff);
+		const float NoL = dot(surfel.normal, light_dir);
+
+		irr += light.color * max(0.0, att * NoL);
+	}
+
+	for(uint i = 0; i != spot_count; ++i) {
+		const SpotLight light = spot_lights[i];
+		vec3 light_dir = light.position - surfel.position;
+		const float distance = length(light_dir);
+		light_dir /= distance;
+		const float spot_cos_alpha = -dot(light_dir, light.forward);
+		const float spot = pow(max(0.0, (spot_cos_alpha - light.cos_angle) / (1.0 - light.cos_angle)), light.angle_exp);
+		float att = spot * attenuation(distance, light.radius, light.falloff);
+		const float NoL = dot(surfel.normal, light_dir);
+
+		irr += light.color * max(0.0, att * NoL);
+	}
+
+	irradiance[gl_GlobalInvocationID.x] = irr * surfel.albedo;
+}
+
+

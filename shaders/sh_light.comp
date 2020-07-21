@@ -1,0 +1,82 @@
+#version 450
+
+#include "lib/lighting.glsl"
+#include "lib/gbuffer.glsl"
+#include "lib/shadows.glsl"
+#include "lib/sh.glsl"
+
+// -------------------------------- I/O --------------------------------
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(set = 0, binding = 0) uniform sampler2D in_depth;
+layout(set = 0, binding = 1) uniform sampler2D in_color;
+layout(set = 0, binding = 2) uniform sampler2D in_normal;
+layout(set = 0, binding = 3) uniform sampler2D in_shadows;
+
+layout(set = 0, binding = 4) uniform CameraData {
+	Camera camera;
+};
+
+layout(set = 0, binding = 5) readonly buffer PointLights {
+	PointLight point_lights[];
+};
+
+layout(set = 0, binding = 6) readonly buffer SpotLights {
+	SpotLight spot_lights[];
+};
+
+layout(set = 0, binding = 7) readonly buffer Shadows {
+	ShadowMapParams shadow_params[];
+};
+
+
+layout(rgba16f, set = 0, binding = 8) uniform image2D out_color;
+
+
+layout(push_constant) uniform PushConstants {
+	uint point_count;
+	uint spot_count;
+	uint sh_index;
+};
+
+
+// -------------------------------- MAIN --------------------------------
+
+void main() {
+	const ivec2 coord = ivec2(gl_GlobalInvocationID.xy);
+	const vec2 image_size = vec2(imageSize(out_color).xy);
+	const vec2 uv = vec2(gl_GlobalInvocationID.xy) / image_size;
+
+	const float depth = texelFetch(in_depth, coord, 0).x;
+
+	if(is_OOB(depth)) {
+		return;
+	}
+
+	const vec3 world_pos = unproject(uv, depth, camera.inv_view_proj);
+
+
+	SH sh = empty_sh();
+	for(uint i = 0; i != point_count; ++i) {
+		const PointLight light = point_lights[i];
+		vec3 light_dir = light.position - world_pos;
+		const float distance = length(light_dir);
+		light_dir /= distance;
+		const float att = attenuation(distance, light.radius, light.falloff);
+		const vec3 radiance = light.color * att;
+
+
+		const SH light_sh = compute_sh(radiance, light_dir);
+		sh = add_sh(sh, light_sh);
+	}
+
+	float roughness;
+	vec3 normal;
+	unpack_normal(texelFetch(in_normal, coord, 0), normal, roughness);
+
+	const vec3 irradiance = eval_sh(sh, normal);
+	imageStore(out_color, coord, vec4(irradiance, 1.0));
+}
+
+
