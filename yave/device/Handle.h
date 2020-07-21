@@ -19,49 +19,74 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **********************************/
-#ifndef YAVE_GRAPHICS_BUFFERS_BUFFERBASE_H
-#define YAVE_GRAPHICS_BUFFERS_BUFFERBASE_H
+#ifndef YAVE_DEVICE_HANDLE_H
+#define YAVE_DEVICE_HANDLE_H
 
-#include <yave/device/DeviceLinked.h>
-#include <yave/device/Handle.h>
-#include <yave/graphics/memory/DeviceMemory.h>
-
-#include "BufferUsage.h"
-
-#include <yave/utils/traits.h>
+#include "DeviceUtils.h"
 
 namespace yave {
 
-class BufferBase : NonCopyable {
+template<typename T>
+class Handle {
 	public:
-		DevicePtr device() const;
-		bool is_null() const;
+		~Handle(); // LifetimeManager.h
 
-		BufferUsage usage() const;
-		usize byte_size() const;
-		const DeviceMemory& device_memory() const;
+		Handle() = default;
 
-		VkDescriptorBufferInfo descriptor_info() const;
+		Handle(const Handle&) = default;
+		Handle& operator=(const Handle&) = default;
 
-		VkBuffer vk_buffer() const;
+		Handle(Handle&& other) {
+			swap(other);
+		}
 
-	protected:
-		BufferBase() = default;
-		BufferBase(BufferBase&&) = default;
-		BufferBase& operator=(BufferBase&&) = default;
+		Handle(T h) : _handle(std::move(h)) {
+		}
 
-		BufferBase(DevicePtr dptr, usize byte_size, BufferUsage usage, MemoryType type);
+
+		void swap(Handle& other) {
+			std::swap(other._handle, _handle);
+		}
+
+		Handle& operator=(Handle&& other) {
+			swap(other);
+			return *this;
+		}
+
+		bool is_null() const {
+			const T null = {};
+			return _handle == null;
+		}
+
+		T& get() {
+			return _handle;
+		}
+
+		const T& get() const {
+			return _handle;
+		}
+
+		operator T&() {
+			return _handle;
+		}
+
+		operator const T&() const {
+			return _handle;
+		}
+
+		bool operator==(Handle h) const {
+			return _handle == h._handle;
+		}
+
+		bool operator!=(Handle h) const {
+			return !operator==(h);
+		}
 
 	private:
-		usize _size = 0;
-		Handle<VkBuffer> _buffer;
-		BufferUsage _usage = BufferUsage::None;
-		Handle<DeviceMemory> _memory;
+		T _handle = {};
 };
-
-static_assert(is_safe_base<BufferBase>::value);
 
 }
 
 
-#endif // YAVE_GRAPHICS_BUFFERS_BUFFERBASE_H
+#endif // YAVE_DEVICE_HANDLE_H

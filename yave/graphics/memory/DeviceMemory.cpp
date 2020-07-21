@@ -87,5 +87,8 @@ void DeviceMemory::swap(DeviceMemory& other) {
 	std::swap(_size, other._size);
 }
 
+bool DeviceMemory::operator==(const DeviceMemory& other) const {
+	return _memory == other._memory;
+}
 
 }

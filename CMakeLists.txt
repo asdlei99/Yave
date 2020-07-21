@@ -31,13 +31,6 @@ option(YAVE_UNITY_BUILD "Force unity build" OFF)
 
 
 
-# Shitty hack to use lld when using MinGW to avoid long link times
-if(MINGW)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=lld")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=lld")
-	message("Using LLD instead of MinGW linker")
-endif()
-
 find_library(Vulkan REQUIRED)
 
 # Another shitty hack to locate vulkan SDK if CMake fails

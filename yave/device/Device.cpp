@@ -36,6 +36,13 @@ SOFTWARE.
 
 //#define YAVE_NV_RAY_TRACING
 
+
+namespace yave::device {
+Device* main_device = nullptr;
+}
+
+
+
 namespace yave {
 
 static void check_features(const VkPhysicalDeviceFeatures& features, const VkPhysicalDeviceFeatures& required) {
@@ -216,6 +223,8 @@ Device::Device(Instance& instance) :
 		_samplers(create_samplers(this)),
 		_descriptor_set_allocator(this) {
 
+	y_always_assert(!device::main_device, "A device already exists");
+	device::main_device = this;
 #ifdef YAVE_NV_RAY_TRACING
 	if(is_extension_supported(RayTracing::extension_name(), _physical.vk_physical_device())) {
 		_extensions.raytracing = std::make_unique<RayTracing>(this);
@@ -228,6 +237,9 @@ Device::Device(Instance& instance) :
 }
 
 Device::~Device() {
+	y_always_assert(device::main_device == this, "Incorrect device");
+	device::main_device = nullptr;
+
 	_resources = DeviceResources();
 	_lifetime_manager.stop_async_collection();
 

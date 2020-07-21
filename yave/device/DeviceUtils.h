@@ -19,49 +19,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **********************************/
-#ifndef YAVE_GRAPHICS_BUFFERS_BUFFERBASE_H
-#define YAVE_GRAPHICS_BUFFERS_BUFFERBASE_H
+#ifndef YAVE_DEVICE_DEVICE_UTILS_H
+#define YAVE_DEVICE_DEVICE_UTILS_H
 
-#include <yave/device/DeviceLinked.h>
-#include <yave/device/Handle.h>
-#include <yave/graphics/memory/DeviceMemory.h>
+#include <yave/yave.h>
 
-#include "BufferUsage.h"
+#include <yave/graphics/commands/CmdBuffer.h>
 
-#include <yave/utils/traits.h>
+#include <yave/graphics/vk/vk.h>
 
 namespace yave {
 
-class BufferBase : NonCopyable {
-	public:
-		DevicePtr device() const;
-		bool is_null() const;
-
-		BufferUsage usage() const;
-		usize byte_size() const;
-		const DeviceMemory& device_memory() const;
-
-		VkDescriptorBufferInfo descriptor_info() const;
-
-		VkBuffer vk_buffer() const;
-
-	protected:
-		BufferBase() = default;
-		BufferBase(BufferBase&&) = default;
-		BufferBase& operator=(BufferBase&&) = default;
-
-		BufferBase(DevicePtr dptr, usize byte_size, BufferUsage usage, MemoryType type);
-
-	private:
-		usize _size = 0;
-		Handle<VkBuffer> _buffer;
-		BufferUsage _usage = BufferUsage::None;
-		Handle<DeviceMemory> _memory;
-};
-
-static_assert(is_safe_base<BufferBase>::value);
+VkDevice vk_main_device();
+CmdBuffer<CmdBufferUsage::Disposable> create_disposable_cmd_buffer();
+DeviceMemoryAllocator& device_allocator();
+DescriptorSetAllocator& descriptor_set_allocator();
+const Queue& graphic_queue();
+const DeviceResources& device_resources();
+const DeviceProperties& device_properties();
+LifetimeManager& lifetime_manager();
+const VkAllocationCallbacks* vk_allocation_callbacks();
 
 }
 
 
-#endif // YAVE_GRAPHICS_BUFFERS_BUFFERBASE_H
+#endif // YAVE_DEVICE_DEVICE_UTILS_H

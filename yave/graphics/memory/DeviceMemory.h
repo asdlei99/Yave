@@ -48,6 +48,8 @@ class DeviceMemory : NonCopyable, public DeviceLinked {
 
 		DeviceMemoryHeapBase* heap() const;
 
+		bool operator==(const DeviceMemory& other) const;
+
 	protected:
 		void swap(DeviceMemory& other);
 

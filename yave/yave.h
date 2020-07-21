@@ -44,6 +44,17 @@ class ThreadLocalDevice;
 using ThreadDevicePtr = const ThreadLocalDevice*;
 
 
+
+
+namespace device {
+extern Device* main_device;
+}
+
+inline DevicePtr main_device() {
+	y_debug_assert(device::main_device);
+	return device::main_device;
+}
+
 }
 
 #endif // YAVE_YAVE_H

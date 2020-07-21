@@ -123,6 +123,14 @@ class LifetimeManager : NonCopyable, public DeviceLinked {
 #endif
 };
 
+
+template<typename T>
+Handle<T>::~Handle() {
+	if(!is_null()) {
+		lifetime_manager().destroy_later(std::move(_handle));
+	}
+}
+
 }
 
 #endif // YAVE_DEVICE_RESOURCELIFETIMEMANAGER_H

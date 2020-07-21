@@ -66,19 +66,13 @@ BufferBase::BufferBase(DevicePtr dptr, usize byte_size, BufferUsage usage, Memor
 	std::tie(_buffer, _memory) = alloc_buffer(dptr, byte_size, VkBufferUsageFlagBits(usage), type);
 }
 
-BufferBase::~BufferBase() {
-	if(device()) {
-		device()->destroy(_buffer);
-		device()->destroy(std::move(_memory));
-	}
-}
 
 DevicePtr BufferBase::device() const {
-	return _memory.device();
+	return is_null() ? nullptr : main_device();
 }
 
 bool BufferBase::is_null() const {
-	return !device();
+	return _buffer.is_null();
 }
 
 BufferUsage BufferBase::usage() const {
