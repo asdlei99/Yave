@@ -23,6 +23,7 @@ SOFTWARE.
 #define YAVE_GRAPHICS_IMAGES_IMAGEBASE_H
 
 #include <yave/device/DeviceLinked.h>
+#include <yave/device/Handle.h>
 #include <yave/graphics/memory/DeviceMemory.h>
 
 #include "ImageUsage.h"
@@ -33,10 +34,7 @@ SOFTWARE.
 namespace yave {
 
 class ImageBase : NonCopyable {
-
 	public:
-		~ImageBase();
-
 		DevicePtr device() const;
 		bool is_null() const;
 
@@ -69,10 +67,10 @@ class ImageBase : NonCopyable {
 		ImageFormat _format;
 		ImageUsage _usage = ImageUsage::None;
 
-		DeviceMemory _memory;
+		Handle<DeviceMemory> _memory;
 
-		SwapMove<VkImage> _image;
-		SwapMove<VkImageView> _view;
+		Handle<VkImage> _image;
+		Handle<VkImageView> _view;
 };
 
 static_assert(is_safe_base<ImageBase>::value);

@@ -183,20 +183,13 @@ ImageBase::ImageBase(DevicePtr dptr, ImageUsage usage, ImageType type, const Ima
 	upload_data(*this, data);
 }
 
-ImageBase::~ImageBase() {
-	if(device()) {
-		device()->destroy(_view);
-		device()->destroy(_image);
-		device()->destroy(std::move(_memory));
-	}
-}
 
 DevicePtr ImageBase::device() const {
-	return _memory.device();
+	return is_null() ? nullptr : main_device();
 }
 
 bool ImageBase::is_null() const {
-	return !device();
+	return _image.is_null();
 }
 
 const math::Vec3ui& ImageBase::image_size() const {

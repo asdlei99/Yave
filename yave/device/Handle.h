@@ -58,6 +58,10 @@ class Handle {
 			return _handle == null;
 		}
 
+		void clear() {
+			_handle = {};
+		}
+
 		T& get() {
 			return _handle;
 		}

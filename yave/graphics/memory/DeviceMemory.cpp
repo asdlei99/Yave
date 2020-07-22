@@ -48,9 +48,7 @@ DeviceMemory& DeviceMemory::operator=(DeviceMemory&& other) {
 
 DeviceMemory::~DeviceMemory() {
 	Y_TODO(right now we have to do device()->destroy to recycle memory properly, maybe we want to change that)
-	if(device()) {
-		y_fatal("DeviceMemory has not been freed.");
-	}
+	y_always_assert(!device(), "DeviceMemory has not been freed");
 }
 
 void DeviceMemory::free() {
@@ -61,6 +59,8 @@ void DeviceMemory::free() {
 	// set device to nullptr
 	struct Empty : DeviceLinked {} empty;
 	DeviceLinked::swap(empty);
+
+	y_debug_assert(is_null());
 }
 
 VkDeviceMemory DeviceMemory::vk_memory() const {
@@ -88,7 +88,11 @@ void DeviceMemory::swap(DeviceMemory& other) {
 }
 
 bool DeviceMemory::operator==(const DeviceMemory& other) const {
-	return _memory == other._memory;
+	return
+		device() == other.device() &&
+		_memory == other._memory &&
+		_offset == other._offset &&
+		_size == other._size;
 }
 
 }

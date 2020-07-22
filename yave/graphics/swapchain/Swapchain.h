@@ -46,7 +46,7 @@ class Swapchain : NonMovable, public DeviceLinked {
 
 			~SwapchainImage() {
 				// prevents images to delete their VkImage, this is already done by the swapchain
-				_image = {};
+				_image.clear();
 			}
 
 		private:
