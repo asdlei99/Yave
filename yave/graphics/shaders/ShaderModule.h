@@ -27,14 +27,14 @@ SOFTWARE.
 namespace yave {
 
 template<ShaderType Type>
-class ShaderModule : public ShaderModuleBase {
+class ShaderModule final : public ShaderModuleBase {
 
 	static_assert(Type != ShaderType::None, "ShaderModule can not have None Type");
 
 	public:
 		ShaderModule() = default;
 
-		ShaderModule(DevicePtr dptr, const SpirVData& data) : ShaderModuleBase(dptr, data) {
+		ShaderModule(const SpirVData& data) : ShaderModuleBase(data) {
 			if(type() != ShaderType::None && type() != Type) {
 				y_fatal("Spirv data doesn't match ShaderModule Type.");
 			}

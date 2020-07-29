@@ -34,13 +34,13 @@ SOFTWARE.
 
 namespace yave {
 
-class MaterialTemplate final : NonCopyable, public DeviceLinked {
+class MaterialTemplate final : NonCopyable {
 
 	public:
 		static constexpr usize max_compiled_pipelines = 8;
 
 		MaterialTemplate() = default;
-		MaterialTemplate(DevicePtr dptr, MaterialTemplateData&& data);
+		MaterialTemplate(MaterialTemplateData data);
 
 		const GraphicPipeline& compile(const RenderPass& render_pass) const;
 

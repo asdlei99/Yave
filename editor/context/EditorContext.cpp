@@ -45,7 +45,6 @@ static constexpr std::string_view store_dir = "../store";
 
 EditorContext::EditorContext(DevicePtr dptr) :
 		DeviceLinked(dptr),
-		_resources(dptr),
 		_asset_store(std::make_shared<SQLiteAssetStore>(store_file)),
 		//_asset_store(std::make_shared<FolderAssetStore>(store_dir)),
 		_loader(device(), _asset_store, AssetLoadingFlags::SkipFailedDependenciesBit),

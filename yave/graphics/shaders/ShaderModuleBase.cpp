@@ -36,7 +36,7 @@ static void merge(M& into, const M& o) {
 	}
 }
 
-static VkShaderModule create_shader_module(DevicePtr dptr, const SpirVData& data) {
+static VkShaderModule create_shader_module(const SpirVData& data) {
 	VkShaderModule shader = vk_null();
 	if(data.is_empty()) {
 		return shader;
@@ -48,7 +48,7 @@ static VkShaderModule create_shader_module(DevicePtr dptr, const SpirVData& data
 		create_info.pCode = data.data();
 	}
 
-	vk_check(vkCreateShaderModule(dptr->vk_device(), &create_info, dptr->vk_allocation_callbacks(), &shader));
+	vk_check(vkCreateShaderModule(vk_main_device(), &create_info, vk_allocation_callbacks(), &shader));
 	return shader;
 }
 
@@ -194,7 +194,7 @@ ShaderType ShaderModuleBase::shader_type(const SpirVData& data) {
 	return module_type(compiler);
 }
 
-ShaderModuleBase::ShaderModuleBase(DevicePtr dptr, const SpirVData& data) : DeviceLinked(dptr), _module(create_shader_module(dptr, data)) {
+ShaderModuleBase::ShaderModuleBase(const SpirVData& data) : _module(create_shader_module(data)) {
 	spirv_cross::Compiler compiler(std::vector<u32>(data.data(), data.data() + data.size() / 4));
 
 	_type = module_type(compiler);
@@ -242,10 +242,6 @@ ShaderModuleBase::ShaderModuleBase(DevicePtr dptr, const SpirVData& data) : Devi
 	for(usize i = 0; i != 3; ++i) {
 		_local_size[i] = compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, i);
 	}
-}
-
-ShaderModuleBase::~ShaderModuleBase() {
-	destroy(_module);
 }
 
 }

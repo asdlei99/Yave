@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include <yave/graphics/vk/vk.h>
 #include <yave/device/DeviceLinked.h>
+#include <yave/device/Handle.h>
 
 #include <yave/utils/traits.h>
 
@@ -74,7 +75,7 @@ class SpecializationData : NonCopyable {
 		usize _size = 0;
 };
 
-class ShaderModuleBase : NonMovable, public DeviceLinked {
+class ShaderModuleBase : NonMovable {
 
 	public:
 		enum class AttribType {
@@ -91,8 +92,6 @@ class ShaderModuleBase : NonMovable, public DeviceLinked {
 			u32 component_size;
 			AttribType type;
 		};
-
-		~ShaderModuleBase();
 
 		const auto& bindings() const {
 			return _bindings;
@@ -131,10 +130,10 @@ class ShaderModuleBase : NonMovable, public DeviceLinked {
 	protected:
 		ShaderModuleBase() = default;
 
-		ShaderModuleBase(DevicePtr dptr, const SpirVData& data);
+		ShaderModuleBase(const SpirVData& data);
 
 	private:
-		VkShaderModule _module;
+		Handle<VkShaderModule> _module;
 		ShaderType _type = ShaderType::None;
 		core::ExternalHashMap<u32, core::Vector<VkDescriptorSetLayoutBinding>> _bindings;
 		core::Vector<VkSpecializationMapEntry> _spec_constants;

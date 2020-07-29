@@ -226,11 +226,11 @@ void DeviceResources::load_resources() {
 	}
 
 	for(usize i = 0; i != compute_count; ++i) {
-		_computes[i] = ComputeProgram(ComputeShader(device(), _spirv[i]));
+		_computes[i] = ComputeProgram(ComputeShader(_spirv[i]));
 	}
 
 	for(usize i = 0; i != compute_count; ++i) {
-		_computes[i] = ComputeProgram(ComputeShader(device(), _spirv[i]));
+		_computes[i] = ComputeProgram(ComputeShader(_spirv[i]));
 	}
 
 	for(usize i = 0; i != template_count; ++i) {
@@ -242,7 +242,7 @@ void DeviceResources::load_resources() {
 				.set_cull_mode(data.cull_mode)
 				.set_blend_mode(data.blend_mode)
 			;
-		_material_templates[i] = MaterialTemplate(device(), std::move(template_data));
+		_material_templates[i] = MaterialTemplate(std::move(template_data));
 	}
 
 	{
@@ -328,7 +328,7 @@ const ComputeProgram& DeviceResources::program_from_file(std::string_view file) 
 	auto& prog = _programs[file];
 	if(!prog) {
 		auto spirv = SpirVData::deserialized(io2::File::open(fmt("%.spv", file)).expected("Unable to open SPIR-V file"));
-		prog = std::make_unique<ComputeProgram>(ComputeShader(device(), spirv));
+		prog = std::make_unique<ComputeProgram>(ComputeShader( spirv));
 	}
 	return *prog;
 }
@@ -337,7 +337,7 @@ const ComputeProgram& DeviceResources::program_from_file(std::string_view file) 
 void DeviceResources::reload() {
 	y_debug_assert(is_init());
 	y_profile();
-	device()->wait_all_queues();
+	main_device()->wait_all_queues();
 
 #ifdef Y_DEBUG
 	const auto lock = y_profile_unique_lock(*_lock);

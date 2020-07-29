@@ -28,14 +28,14 @@ SOFTWARE.
 
 namespace yave {
 
-ComputeProgram::ComputeProgram(const ComputeShader& comp, const SpecializationData& data) : DeviceLinked(comp.device()), _local_size(comp.local_size()) {
+ComputeProgram::ComputeProgram(const ComputeShader& comp, const SpecializationData& data) : DeviceLinked(main_device()), _local_size(comp.local_size()) {
 	const auto& bindings = comp.bindings();
 
 	const u32 max_set = std::accumulate(bindings.begin(), bindings.end(), 0, [](u32 max, const auto& p) { return std::max(max, p.first); });
 
 	auto layouts = core::Vector<VkDescriptorSetLayout>(max_set + 1, VkDescriptorSetLayout());
 	for(const auto& binding : bindings) {
-		layouts[binding.first] = device()->descriptor_set_layout(binding.second).vk_descriptor_set_layout();
+		layouts[binding.first] = main_device()->descriptor_set_layout(binding.second).vk_descriptor_set_layout();
 	}
 
 	VkPipelineLayoutCreateInfo layout_create_info = vk_struct();
@@ -46,7 +46,7 @@ ComputeProgram::ComputeProgram(const ComputeShader& comp, const SpecializationDa
 		layout_create_info.pPushConstantRanges = comp.vk_push_constants().data();
 	}
 
-	vk_check(vkCreatePipelineLayout(device()->vk_device(), &layout_create_info, device()->vk_allocation_callbacks(), &_layout.get()));
+	vk_check(vkCreatePipelineLayout(vk_main_device(), &layout_create_info, vk_allocation_callbacks(), &_layout.get()));
 
 
 	if(data.size() && data.size() != comp.specialization_data_size()) {
@@ -77,11 +77,6 @@ ComputeProgram::ComputeProgram(const ComputeShader& comp, const SpecializationDa
 	}
 
 	vk_check(vkCreateComputePipelines(device()->vk_device(), vk_null(), 1, &create_info, device()->vk_allocation_callbacks(), &_pipeline.get()));
-}
-
-ComputeProgram::~ComputeProgram() {
-	destroy(_layout);
-	destroy(_pipeline);
 }
 
 const math::Vec3ui& ComputeProgram::local_size() const {

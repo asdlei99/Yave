@@ -128,7 +128,7 @@ static void create_vertex_attribs(core::Span<ShaderModuleBase::Attribute> vertex
 
 
 
-ShaderProgram::ShaderProgram(const FragmentShader& frag, const VertexShader& vert, const GeometryShader& geom) : DeviceLinked(frag.device()) {
+ShaderProgram::ShaderProgram(const FragmentShader& frag, const VertexShader& vert, const GeometryShader& geom) {
 	{
 		merge_bindings(_bindings, frag.bindings());
 		merge_bindings(_bindings, vert.bindings());
@@ -147,7 +147,7 @@ ShaderProgram::ShaderProgram(const FragmentShader& frag, const VertexShader& ver
 		if(!_bindings.is_empty()) {
 			_layouts = core::Vector<VkDescriptorSetLayout>(max_set + 1, VkDescriptorSetLayout{});
 			for(const auto& binding : _bindings) {
-				_layouts[binding.first] = device()->descriptor_set_layout(binding.second).vk_descriptor_set_layout();
+				_layouts[binding.first] = main_device()->descriptor_set_layout(binding.second).vk_descriptor_set_layout();
 			}
 		}
 	}

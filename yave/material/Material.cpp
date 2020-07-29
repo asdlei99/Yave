@@ -22,17 +22,16 @@ SOFTWARE.
 #include "Material.h"
 #include "SimpleMaterialData.h"
 
-#include <yave/device/Device.h>
+#include <yave/device/DeviceUtils.h>
 
 namespace yave {
 
-static DescriptorSet create_descriptor_set(DevicePtr dptr, const SimpleMaterialData& data) {
-
+static DescriptorSet create_descriptor_set(const SimpleMaterialData& data) {
 	std::array<Descriptor, SimpleMaterialData::texture_count + 1> bindings = {
-			*dptr->device_resources()[DeviceResources::GreyTexture],
-			*dptr->device_resources()[DeviceResources::FlatNormalTexture],
-			*dptr->device_resources()[DeviceResources::WhiteTexture],
-			*dptr->device_resources()[DeviceResources::WhiteTexture],
+			*device_resources()[DeviceResources::GreyTexture],
+			*device_resources()[DeviceResources::FlatNormalTexture],
+			*device_resources()[DeviceResources::WhiteTexture],
+			*device_resources()[DeviceResources::WhiteTexture],
 			InlineDescriptor(data.constants())
 		};
 
@@ -43,7 +42,7 @@ static DescriptorSet create_descriptor_set(DevicePtr dptr, const SimpleMaterialD
 		}
 	}
 
-	return DescriptorSet(dptr, bindings);
+	return DescriptorSet(main_device(), bindings);
 }
 
 static DeviceResources::MaterialTemplates material_template_for_data(const SimpleMaterialData& data) {
@@ -55,13 +54,13 @@ static DeviceResources::MaterialTemplates material_template_for_data(const Simpl
 
 Material::Material(DevicePtr dptr, SimpleMaterialData&& data) :
 		_template(dptr->device_resources()[material_template_for_data(data)]),
-		_set(create_descriptor_set(device(), data)),
+		_set(create_descriptor_set(data)),
 		_data(std::move(data)) {
 }
 
 Material::Material(const MaterialTemplate* tmp, SimpleMaterialData&& data) :
 		_template(tmp),
-		_set(create_descriptor_set(device(), data)),
+		_set(create_descriptor_set(data)),
 		_data(std::move(data)) {
 }
 
@@ -75,11 +74,6 @@ const DescriptorSetBase& Material::descriptor_set() const {
 
 const MaterialTemplate* Material::material_template() const {
 	return _template;
-}
-
-DevicePtr Material::device() const {
-	Y_TODO(cache ?)
-	return _template->device();
 }
 
 bool Material::is_null() const {

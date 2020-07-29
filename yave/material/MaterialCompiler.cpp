@@ -23,7 +23,7 @@ SOFTWARE.
 
 #include <yave/graphics/shaders/ShaderProgram.h>
 #include <yave/meshes/Vertex.h>
-#include <yave/device/Device.h>
+#include <yave/device/DeviceUtils.h>
 
 #include <y/core/Chrono.h>
 
@@ -82,11 +82,11 @@ static VkCompareOp depth_mode(DepthTestMode mode) {
 	}
 }
 
-static GeometryShader create_geometry_shader(DevicePtr dptr, const SpirVData& geom) {
+static GeometryShader create_geometry_shader(const SpirVData& geom) {
 	if(geom.is_empty()) {
 		return GeometryShader();
 	}
-	return GeometryShader(dptr, geom);
+	return GeometryShader(geom);
 }
 
 
@@ -96,12 +96,11 @@ GraphicPipeline MaterialCompiler::compile(const MaterialTemplate* material, cons
 	core::DebugTimer _("MaterialCompiler::compile", core::Duration::milliseconds(2));
 	Y_TODO(move program creation programs can be reused)
 
-	DevicePtr dptr = material->device();
 	const auto& mat_data = material->data();
 
-	const FragmentShader frag = FragmentShader(dptr, mat_data._frag);
-	const VertexShader vert = VertexShader(dptr, mat_data._vert);
-	const GeometryShader geom = create_geometry_shader(dptr, mat_data._geom);
+	const FragmentShader frag = FragmentShader(mat_data._frag);
+	const VertexShader vert = VertexShader(mat_data._vert);
+	const GeometryShader geom = create_geometry_shader(mat_data._geom);
 	const ShaderProgram program(frag, vert, geom);
 
 	core::Vector<VkPipelineShaderStageCreateInfo> pipeline_shader_stages(program.vk_pipeline_stage_info());
@@ -193,7 +192,7 @@ GraphicPipeline MaterialCompiler::compile(const MaterialTemplate* material, cons
 		create_info.pSetLayouts = program.vk_descriptor_layouts().data();
 		create_info.pushConstantRangeCount = u32(program.vk_push_constants().size());
 		create_info.pPushConstantRanges = program.vk_push_constants().data();
-		vk_check(vkCreatePipelineLayout(dptr->vk_device(), &create_info, dptr->vk_allocation_callbacks(), &pipeline_layout));
+		vk_check(vkCreatePipelineLayout(vk_main_device(), &create_info, vk_allocation_callbacks(), &pipeline_layout));
 	}
 
 	const std::array<VkDynamicState, 2> dynamics = {{VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR}};
@@ -222,8 +221,8 @@ GraphicPipeline MaterialCompiler::compile(const MaterialTemplate* material, cons
 	}
 
 	VkPipeline pipeline = {};
-	vk_check(vkCreateGraphicsPipelines(dptr->vk_device(), vk_null(), 1, &create_info, dptr->vk_allocation_callbacks(), &pipeline));
-	return GraphicPipeline(material, Handle(pipeline), Handle(pipeline_layout));
+	vk_check(vkCreateGraphicsPipelines(vk_main_device(), vk_null(), 1, &create_info, vk_allocation_callbacks(), &pipeline));
+	return GraphicPipeline(Handle(pipeline), Handle(pipeline_layout));
 }
 
 }

@@ -31,11 +31,11 @@ namespace yave {
 
 class MaterialTemplate;
 
-class GraphicPipeline : public DeviceLinked {
+class GraphicPipeline {
 
 	public:
 		GraphicPipeline() = default;
-		GraphicPipeline(const MaterialTemplate* mat, Handle<VkPipeline> pipeline, Handle<VkPipelineLayout> layout);
+		GraphicPipeline(Handle<VkPipeline> pipeline, Handle<VkPipelineLayout> layout);
 
 		VkPipeline vk_pipeline() const;
 		VkPipelineLayout vk_pipeline_layout() const;
