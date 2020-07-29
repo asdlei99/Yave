@@ -230,22 +230,15 @@ void Swapchain::build_swapchain() {
 	for(auto image : images) {
 		const VkImageView view = create_image_view(device(), image, _color_format.vk_format());
 
-		struct SwapchainImageMemory : DeviceMemory {
-			SwapchainImageMemory(DevicePtr dptr) : DeviceMemory(dptr, vk_null(), 0, 0) {
-			}
-		};
-
 		auto swapchain_image = SwapchainImage();
-
-		swapchain_image._memory = SwapchainImageMemory(device());
 
 		swapchain_image._size = math::Vec3ui(_size, 1);
 		swapchain_image._format = _color_format;
 		swapchain_image._usage = SwapchainImageUsage;
 
 		// prevent the images to delete their handles: the swapchain already does that.
-		swapchain_image._image = image;
-		swapchain_image._view = view;
+		swapchain_image._image = Handle(image);
+		swapchain_image._view = Handle(view);
 
 		_images << std::move(swapchain_image);
 	}

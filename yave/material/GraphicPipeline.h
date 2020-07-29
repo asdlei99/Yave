@@ -24,31 +24,25 @@ SOFTWARE.
 
 #include <yave/graphics/vk/vk.h>
 
+#include <yave/device/Handle.h>
 #include <yave/device/DeviceLinked.h>
 
 namespace yave {
 
 class MaterialTemplate;
 
-class GraphicPipeline : NonCopyable, public DeviceLinked {
+class GraphicPipeline : public DeviceLinked {
 
 	public:
 		GraphicPipeline() = default;
-		GraphicPipeline(const MaterialTemplate* mat, VkPipeline pipeline, VkPipelineLayout layout);
-
-		~GraphicPipeline();
-
-		GraphicPipeline(GraphicPipeline&& other);
-		GraphicPipeline& operator=(GraphicPipeline&& other);
+		GraphicPipeline(const MaterialTemplate* mat, Handle<VkPipeline> pipeline, Handle<VkPipelineLayout> layout);
 
 		VkPipeline vk_pipeline() const;
 		VkPipelineLayout vk_pipeline_layout() const;
 
 	private:
-		void swap(GraphicPipeline& other);
-
-		VkPipeline _pipeline = {};
-		VkPipelineLayout _layout = {};
+		Handle<VkPipeline> _pipeline;
+		Handle<VkPipelineLayout> _layout;
 };
 
 }

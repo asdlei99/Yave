@@ -86,7 +86,7 @@ static auto stage_data(DevicePtr dptr, usize byte_size, const void* data) {
 	return staging_buffer;
 }
 
-static VkImageView create_view(DevicePtr dptr, VkImage image, ImageFormat format, usize layers, usize mips, ImageType type) {
+static Handle<VkImageView> create_view(DevicePtr dptr, VkImage image, ImageFormat format, usize layers, usize mips, ImageType type) {
 	VkImageViewCreateInfo create_info = vk_struct();
 	{
 		create_info.image = image;
@@ -99,16 +99,16 @@ static VkImageView create_view(DevicePtr dptr, VkImage image, ImageFormat format
 
 	VkImageView view = {};
 	vk_check(vkCreateImageView(dptr->vk_device(), &create_info, dptr->vk_allocation_callbacks(), &view));
-	return view;
+	return Handle(view);
 }
 
-static std::tuple<VkImage, DeviceMemory, VkImageView> alloc_image(DevicePtr dptr, const math::Vec3ui& size, usize layers, usize mips, ImageFormat format, ImageUsage usage, ImageType type) {
+static std::tuple<Handle<VkImage>, Handle<DeviceMemory>, Handle<VkImageView>> alloc_image(DevicePtr dptr, const math::Vec3ui& size, usize layers, usize mips, ImageFormat format, ImageUsage usage, ImageType type) {
 	y_profile();
 	const auto image = create_image(dptr, size, layers, mips, format, usage, type);
 	auto memory = dptr->allocator().alloc(image);
 	bind_image_memory(dptr, image, memory);
 
-	return {image, std::move(memory), create_view(dptr, image, format, layers, mips, type)};
+	return {Handle(image), Handle(std::move(memory)), create_view(dptr, image, format, layers, mips, type)};
 }
 
 static void upload_data(ImageBase& image, const ImageData& data) {

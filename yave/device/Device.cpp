@@ -124,6 +124,7 @@ static VkDevice create_device(
 	});
 
 
+	Y_TODO(USE Vulkan11 structures to enable vk 1.1)
 	auto extensions = core::vector_with_capacity<const char*>(4);
 	extensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,

@@ -50,14 +50,14 @@ static VkBuffer create_buffer(DevicePtr dptr, usize byte_size, VkBufferUsageFlag
 	return buffer;
 }
 
-static std::tuple<VkBuffer, DeviceMemory> alloc_buffer(DevicePtr dptr, usize buffer_size, VkBufferUsageFlags usage, MemoryType type) {
+static std::tuple<Handle<VkBuffer>, Handle<DeviceMemory>> alloc_buffer(DevicePtr dptr, usize buffer_size, VkBufferUsageFlags usage, MemoryType type) {
 	y_debug_assert(buffer_size);
 
 	const auto buffer = create_buffer(dptr, buffer_size, usage);
 	auto memory = dptr->allocator().alloc(buffer, type);
 	bind_buffer_memory(dptr, buffer, memory);
 
-	return {buffer, std::move(memory)};
+	return {Handle(buffer), Handle(std::move(memory))};
 }
 
 

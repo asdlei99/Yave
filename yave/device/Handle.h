@@ -40,7 +40,7 @@ class Handle {
 			swap(other);
 		}
 
-		Handle(T h) : _handle(std::move(h)) {
+		explicit Handle(T h) : _handle(std::move(h)) {
 		}
 
 
