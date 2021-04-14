@@ -107,7 +107,7 @@ int main() {
     {
         yave::ecs::EntityWorld world;
         add(world);
-        const float res = iter(world.view<const C<7>, const C<19>>().components());
+        const float res = iter(world.view<C<7>, C<19>>().components());
         log_msg(fmt("result = %", res));
     }
 
