@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,38 +37,35 @@ SpinLock::SpinLock() : _spin(Unlocked) {
 
 SpinLock::~SpinLock() {
 #ifdef Y_DEBUG
-	const bool unlocked = _spin.exchange(Destroyed, std::memory_order_acquire) == Unlocked;
-	unused(unlocked);
-	y_debug_assert(unlocked);
+    const bool unlocked = _spin.exchange(Destroyed, std::memory_order_acquire) == Unlocked;
+    unused(unlocked);
+    y_debug_assert(unlocked);
 #endif
 }
 
 void SpinLock::lock() {
-	for(usize failed = 0; !try_lock(); ++failed) {
-		wait_once();
-	}
+    for(usize failed = 0; !try_lock(); ++failed) {
+        wait_once();
+    }
 }
 
 bool SpinLock::try_lock() {
-	const Type res = _spin.exchange(Locked, std::memory_order_acquire);
-#ifdef Y_DEBUG
-	y_debug_assert(res != Destroyed);
-#endif
-	return res == Unlocked;
+    const Type res = _spin.exchange(Locked, std::memory_order_acquire);
+    y_debug_assert(res != Destroyed);
+    return res == Unlocked;
 }
 
 void SpinLock::unlock() {
-#ifdef Y_DEBUG
-	y_debug_assert(_spin != Destroyed);
-#endif
-	_spin.store(Unlocked, std::memory_order_release);
+    y_debug_assert(_spin != Destroyed);
+    _spin.store(Unlocked, std::memory_order_release);
 }
 
 void SpinLock::wait_once() {
-	Y_ASM_PAUSE();
+    Y_ASM_PAUSE();
 }
 
 }
 }
 
 #undef Y_ASM_PAUSE
+

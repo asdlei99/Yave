@@ -27,6 +27,7 @@ SOFTWARE.
 #include <y/core/Range.h>
 
 #include <tuple>
+#include <array>
 #include <type_traits>
 
 namespace y {
@@ -36,166 +37,166 @@ template<bool, typename...>
 class ComponentIterator;
 
 class ComponentEndIterator {
-	public:
-		using difference_type = usize;
+    public:
+        using difference_type = usize;
 
-		ComponentEndIterator(usize size = 0) : _index(size) {
-		}
+        ComponentEndIterator(usize size = 0) : _index(size) {
+        }
 
-		template<bool T, typename... Args>
-		difference_type operator-(const ComponentIterator<T, Args...>& other) const;
+        template<bool T, typename... Args>
+        difference_type operator-(const ComponentIterator<T, Args...>& other) const;
 
-		template<bool T, typename... Args>
-		bool operator==(const ComponentIterator<T, Args...>& other) const;
+        template<bool T, typename... Args>
+        bool operator==(const ComponentIterator<T, Args...>& other) const;
 
-		template<bool T, typename... Args>
-		bool operator!=(const ComponentIterator<T, Args...>& other) const;
+        template<bool T, typename... Args>
+        bool operator!=(const ComponentIterator<T, Args...>& other) const;
 
-	private:
-		template<bool, typename...>
-		friend class ComponentIterator;
+    private:
+        template<bool, typename...>
+        friend class ComponentIterator;
 
-		usize _index = 0;
+        usize _index = 0;
 };
 
 template<bool Tuple, typename... Args>
 class ComponentIterator {
 
-	template<usize I, typename... A>
-	static constexpr bool is_compatible() {
-		if constexpr(I < sizeof...(A)) {
-			using this_t = std::tuple_element_t<I, std::tuple<Args...>>;
-			using other_t = std::tuple_element_t<I, std::tuple<A...>>;
-			if constexpr(!std::is_same_v<this_t, other_t> && !std::is_same_v<this_t, const other_t>) {
-				return false;
-			}
-			return is_compatible<I + 1, A...>();
-		}
-		return true;
-	}
+    template<usize I, typename... A>
+    static constexpr bool is_compatible() {
+        if constexpr(I < sizeof...(A)) {
+            using this_t = std::tuple_element_t<I, std::tuple<Args...>>;
+            using other_t = std::tuple_element_t<I, std::tuple<A...>>;
+            if constexpr(!std::is_same_v<this_t, other_t> && !std::is_same_v<this_t, const other_t>) {
+                return false;
+            }
+            return is_compatible<I + 1, A...>();
+        }
+        return true;
+    }
 
-	using reference_tuple = std::tuple<Args&...>;
+    using reference_tuple = std::tuple<Args&...>;
 
-	public:
-		static constexpr usize component_count = sizeof...(Args);
+    public:
+        static constexpr usize component_count = sizeof...(Args);
 
-		using difference_type = usize;
-		using iterator_category = std::random_access_iterator_tag;
+        using difference_type = usize;
+        using iterator_category = std::random_access_iterator_tag;
 
-		using reference = std::conditional_t<Tuple, reference_tuple, std::tuple_element_t<0, reference_tuple>>;
-		using value_type = reference;
-		using pointer = std::remove_reference_t<value_type>*;
+        using reference = std::conditional_t<Tuple, reference_tuple, std::tuple_element_t<0, reference_tuple>>;
+        using value_type = reference;
+        using pointer = std::remove_reference_t<value_type>*;
 
-		static_assert(Tuple || component_count == 1);
-
-
-		ComponentIterator() = default;
-		ComponentIterator(const ComponentIterator&) = default;
-
-		template<bool T, typename... A, typename = std::enable_if_t<is_compatible<0, A...>()>>
-		ComponentIterator(const ComponentIterator<T, A...>& other) : _index(other._index), _chunks(other._chunks), _offsets(other._offsets) {
-		}
-
-		reference operator*() const {
-			if constexpr(Tuple) {
-				return make_refence_tuple<0>();
-			} else {
-				return std::get<0>(make_refence_tuple<0>());
-			}
-		}
-
-		bool operator==(const ComponentEndIterator& other) const {
-			return _index == other._index;
-		}
-
-		bool operator!=(const ComponentEndIterator& other) const {
-			return !operator==(other);
-		}
-
-		bool operator==(const ComponentIterator& other) const {
-			return _index == other._index && _chunks == other._chunks;
-		}
-
-		bool operator!=(const ComponentIterator& other) const {
-			return !operator==(other);
-		}
-
-		ComponentIterator& operator++() {
-			++_index;
-			return *this;
-		}
-
-		ComponentIterator& operator--() {
-			--_index;
-			return *this;
-		}
-
-		ComponentIterator operator++(int) {
-			const auto it = *this;
-			++*this;
-			return it;
-		}
-
-		ComponentIterator operator--(int) {
-			const auto it = *this;
-			--*this;
-			return it;
-		}
-
-		difference_type operator-(const ComponentIterator& other) const {
-			return _index - other._index;
-		}
-
-		ComponentIterator& operator+=(usize n) {
-			_index += n;
-			return *this;
-		}
-
-		ComponentIterator& operator-=(usize n) {
-			_index -= n;
-			return *this;
-		}
+        static_assert(Tuple || component_count == 1);
 
 
-		ComponentIterator operator+(usize n) const {
-			auto it = *this;
-			it += n;
-			return it;
-		}
+        ComponentIterator() = default;
+        ComponentIterator(const ComponentIterator&) = default;
 
-		ComponentIterator operator-(usize n) const {
-			auto it = *this;
-			it -= n;
-			return it;
-		}
+        template<bool T, typename... A, typename = std::enable_if_t<is_compatible<0, A...>()>>
+        ComponentIterator(const ComponentIterator<T, A...>& other) : _index(other._index), _chunks(other._chunks), _offsets(other._offsets) {
+        }
 
-	private:
-		friend class Archetype;
-		friend class ComponentEndIterator;
+        reference operator*() const {
+            if constexpr(Tuple) {
+                return make_refence_tuple<0>();
+            } else {
+                return std::get<0>(make_refence_tuple<0>());
+            }
+        }
 
-		template<bool, typename...>
-		friend class ComponentIterator;
+        bool operator==(const ComponentEndIterator& other) const {
+            return _index == other._index;
+        }
 
-		template<usize I = 0>
-		auto make_refence_tuple() const {
-			y_debug_assert(_chunks || !sizeof...(Args));
-			const usize chunk_index = _index / entities_per_chunk;
-			const usize item_index = _index % entities_per_chunk;
-			using type = std::remove_reference_t<std::tuple_element_t<I, reference_tuple>>;
+        bool operator!=(const ComponentEndIterator& other) const {
+            return !operator==(other);
+        }
 
-			void* offset_chunk = static_cast<u8*>(_chunks[chunk_index]) + _offsets[I];
-			type* chunk = static_cast<type*>(offset_chunk);
-			if constexpr(I + 1 == component_count) {
-				return std::tie(chunk[item_index]);
-			} else {
-				return std::tuple_cat(std::tie(chunk[item_index]),
-									  make_refence_tuple<I + 1>());
-			}
-		}
+        bool operator==(const ComponentIterator& other) const {
+            return _index == other._index && _chunks == other._chunks;
+        }
 
-		usize _index = 0;
-		void** _chunks = nullptr;
-		std::array<usize, component_count> _offsets;
+        bool operator!=(const ComponentIterator& other) const {
+            return !operator==(other);
+        }
+
+        ComponentIterator& operator++() {
+            ++_index;
+            return *this;
+        }
+
+        ComponentIterator& operator--() {
+            --_index;
+            return *this;
+        }
+
+        ComponentIterator operator++(int) {
+            const auto it = *this;
+            ++*this;
+            return it;
+        }
+
+        ComponentIterator operator--(int) {
+            const auto it = *this;
+            --*this;
+            return it;
+        }
+
+        difference_type operator-(const ComponentIterator& other) const {
+            return _index - other._index;
+        }
+
+        ComponentIterator& operator+=(usize n) {
+            _index += n;
+            return *this;
+        }
+
+        ComponentIterator& operator-=(usize n) {
+            _index -= n;
+            return *this;
+        }
+
+
+        ComponentIterator operator+(usize n) const {
+            auto it = *this;
+            it += n;
+            return it;
+        }
+
+        ComponentIterator operator-(usize n) const {
+            auto it = *this;
+            it -= n;
+            return it;
+        }
+
+    private:
+        friend class Archetype;
+        friend class ComponentEndIterator;
+
+        template<bool, typename...>
+        friend class ComponentIterator;
+
+        template<usize I = 0>
+        auto make_refence_tuple() const {
+            y_debug_assert(_chunks || !sizeof...(Args));
+            const usize chunk_index = _index / entities_per_chunk;
+            const usize item_index = _index % entities_per_chunk;
+            using type = std::remove_reference_t<std::tuple_element_t<I, reference_tuple>>;
+
+            void* offset_chunk = static_cast<u8*>(_chunks[chunk_index]) + _offsets[I];
+            type* chunk = static_cast<type*>(offset_chunk);
+            if constexpr(I + 1 == component_count) {
+                return std::tie(chunk[item_index]);
+            } else {
+                return std::tuple_cat(std::tie(chunk[item_index]),
+                                      make_refence_tuple<I + 1>());
+            }
+        }
+
+        usize _index = 0;
+        void** _chunks = nullptr;
+        std::array<usize, component_count> _offsets;
 };
 
 static_assert(std::is_constructible_v<ComponentIterator<true, const int>, ComponentIterator<false, int>>);
@@ -204,17 +205,17 @@ static_assert(!std::is_constructible_v<ComponentIterator<true, int>, ComponentIt
 
 template<bool T, typename... Args>
 ComponentEndIterator::difference_type ComponentEndIterator::operator-(const ComponentIterator<T, Args...>& other) const {
-	return _index - other._index;
+    return _index - other._index;
 }
 
 template<bool T, typename... Args>
 bool ComponentEndIterator::operator==(const ComponentIterator<T, Args...>& other) const {
-	return other == *this;
+    return other == *this;
 }
 
 template<bool T, typename... Args>
 bool ComponentEndIterator::operator!=(const ComponentIterator<T, Args...>& other) const {
-	return other != *this;
+    return other != *this;
 }
 
 
@@ -227,29 +228,30 @@ using ComponentViewRange = core::Range<ComponentIterator<true, Args...>, Compone
 
 template<typename T>
 struct SingleComponentView : SingleComponentViewRange<T> {
-	SingleComponentView() : SingleComponentView(ComponentIterator<false, T>({}), 0) {
-	}
+    SingleComponentView() : SingleComponentView(ComponentIterator<false, T>({}), 0) {
+    }
 
-	SingleComponentView(ComponentIterator<false, T> beg, ComponentEndIterator end) : SingleComponentViewRange<T>(std::move(beg), end) {
-	}
+    SingleComponentView(ComponentIterator<false, T> beg, ComponentEndIterator end) : SingleComponentViewRange<T>(std::move(beg), end) {
+    }
 
-	SingleComponentView(ComponentIterator<false, T> beg, usize size) : SingleComponentView(std::move(beg), ComponentEndIterator(size)) {
-	}
+    SingleComponentView(ComponentIterator<false, T> beg, usize size) : SingleComponentView(std::move(beg), ComponentEndIterator(size)) {
+    }
 };
 
 template<typename... Args>
 struct ComponentView : ComponentViewRange<Args...> {
-	ComponentView() : ComponentView(ComponentIterator<true, Args...>({}), 0) {
-	}
+    ComponentView() : ComponentView(ComponentIterator<true, Args...>({}), 0) {
+    }
 
-	ComponentView(ComponentIterator<true, Args...> beg, ComponentEndIterator end) : ComponentViewRange<Args...>(std::move(beg), end) {
-	}
+    ComponentView(ComponentIterator<true, Args...> beg, ComponentEndIterator end) : ComponentViewRange<Args...>(std::move(beg), end) {
+    }
 
-	ComponentView(ComponentIterator<true, Args...> beg, usize size) : ComponentView(std::move(beg), ComponentEndIterator(size)) {
-	}
+    ComponentView(ComponentIterator<true, Args...> beg, usize size) : ComponentView(std::move(beg), ComponentEndIterator(size)) {
+    }
 };
 
 }
 }
 
 #endif // Y_ECS_COMPONENTVIEW_H
+

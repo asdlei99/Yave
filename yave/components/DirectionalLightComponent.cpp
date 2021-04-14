@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +25,28 @@ SOFTWARE.
 namespace yave {
 
 math::Vec3& DirectionalLightComponent::color() {
-	return _color;
+    return _color;
 }
 
 const math::Vec3& DirectionalLightComponent::color() const {
-	return _color;
+    return _color;
 }
 
 math::Vec3& DirectionalLightComponent::direction() {
-	return _direction;
+    return _direction;
 }
 
 const math::Vec3& DirectionalLightComponent::direction() const {
-	return _direction;
+    return _direction;
 }
 
 float& DirectionalLightComponent::intensity() {
-	return _intensity;
+    return _intensity;
 }
 
 float DirectionalLightComponent::intensity() const {
-	return _intensity;
+    return _intensity;
 }
 
 }
+

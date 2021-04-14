@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,44 @@ SOFTWARE.
 #define YAVE_GRAPHICS_IMAGES_IMAGEFORMAT_H
 
 #include <yave/graphics/vk/vk.h>
-#include <yave/utils/serde.h>
+
+#include <y/reflect/reflect.h>
 
 namespace yave {
 
 class ImageFormat {
-	public:
-		constexpr ImageFormat(VkFormat format = VK_FORMAT_UNDEFINED) : _format(format) {
-		}
+    public:
+        constexpr ImageFormat(VkFormat format = VK_FORMAT_UNDEFINED) : _format(format) {
+        }
 
-		VkFormat vk_format() const;
-		VkImageAspectFlags vk_aspect() const;
+        VkFormat vk_format() const;
+        VkImageAspectFlags vk_aspect() const;
 
-		usize bit_per_pixel() const;
-		usize components() const;
+        usize bit_per_pixel() const;
+        usize components() const;
 
-		bool is_valid() const;
-		bool is_float() const;
+        bool is_valid() const;
+        bool is_float() const;
 
-		bool is_block_format() const;
-		bool is_depth_format() const;
+        bool supports_filtering() const;
 
-		std::string_view name() const;
+        bool is_block_format() const;
+        bool is_depth_format() const;
 
-		bool operator==(const ImageFormat& other) const;
-		bool operator!=(const ImageFormat& other) const;
+        ImageFormat non_depth() const;
 
-		y_serde3(_format)
+        std::string_view name() const;
 
-	private:
-		VkFormat _format;
+        bool operator==(const ImageFormat& other) const;
+        bool operator!=(const ImageFormat& other) const;
+
+        y_reflect(_format)
+
+    private:
+        VkFormat _format;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_IMAGES_IMAGEFORMAT_H
+

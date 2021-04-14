@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,46 +22,48 @@ SOFTWARE.
 #ifndef YAVE_GRAPHICS_MEMORY_DEVICEMEMORY_H
 #define YAVE_GRAPHICS_MEMORY_DEVICEMEMORY_H
 
-#include <yave/graphics/vk/vk.h>
-#include <yave/device/DeviceLinked.h>
+#include <yave/graphics/graphics.h>
 
 namespace yave {
 
 class DeviceMemoryHeapBase;
 
-class DeviceMemory : NonCopyable, public DeviceLinked {
+class DeviceMemory {
 
-	public:
-		DeviceMemory() = default;
+    public:
+        DeviceMemory() = default;
 
-		DeviceMemory(DeviceMemoryHeapBase* heap, VkDeviceMemory memory, usize offset, usize size);
-		DeviceMemory(DevicePtr dptr, VkDeviceMemory memory, usize offset, usize size);
+        DeviceMemory(DeviceMemoryHeapBase* heap, VkDeviceMemory memory, usize offset, usize size);
+        DeviceMemory(VkDeviceMemory memory, usize offset, usize size);
 
-		~DeviceMemory();
+        ~DeviceMemory();
 
-		DeviceMemory(DeviceMemory&& other);
-		DeviceMemory& operator=(DeviceMemory&& other);
+        DeviceMemory(DeviceMemory&& other);
+        DeviceMemory& operator=(DeviceMemory&& other);
 
-		VkDeviceMemory vk_memory() const;
-		usize vk_offset() const;
-		usize vk_size() const;
+        bool is_null() const;
 
-		DeviceMemoryHeapBase* heap() const;
+        VkDeviceMemory vk_memory() const;
+        usize vk_offset() const;
+        usize vk_size() const;
 
-	protected:
-		void swap(DeviceMemory& other);
+        DeviceMemoryHeapBase* heap() const;
 
-	private:
-		friend class LifetimeManager;
+    protected:
+        void swap(DeviceMemory& other);
 
-		void free();
+    private:
+        friend class LifetimeManager;
 
-		DeviceMemoryHeapBase* _heap = nullptr;
-		VkDeviceMemory _memory = {};
-		usize _offset = 0;
-		usize _size = 0;
+        void free();
+
+        DeviceMemoryHeapBase* _heap = nullptr;
+        VkDeviceMemory _memory = {};
+        usize _offset = 0;
+        usize _size = 0;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_MEMORY_DEVICEMEMORY_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,38 @@ SOFTWARE.
 #define YAVE_COMPONENTS_POINTLIGHTCOMPONENT_H
 
 #include <yave/ecs/ecs.h>
-#include <yave/utils/serde.h>
+#include <y/reflect/reflect.h>
 
 #include "TransformableComponent.h"
 
 namespace yave {
 
 class PointLightComponent final : public ecs::RequiredComponents<TransformableComponent> {
-	public:
-		PointLightComponent() = default;
+    public:
+        PointLightComponent() = default;
 
-		math::Vec3& color();
-		const math::Vec3& color() const;
+        math::Vec3& color();
+        const math::Vec3& color() const;
 
-		float& intensity();
-		float intensity() const;
+        float& intensity();
+        float intensity() const;
 
-		float& radius();
-		float radius() const;
+        float& radius();
+        float radius() const;
 
-		float& falloff();
-		float falloff() const;
+        float& falloff();
+        float falloff() const;
 
-		y_serde3(_color, _intensity, _radius, _falloff)
+        y_reflect(_color, _intensity, _radius, _falloff)
 
-	private:
-		math::Vec3 _color = math::Vec3{1.0f};
-		float _intensity = 1.0f;
-		float _radius = 10.0f;
-		float _falloff = 1.0f;
+    private:
+        math::Vec3 _color = math::Vec3{1.0f};
+        float _intensity = 1.0f;
+        float _radius = 10.0f;
+        float _falloff = 1.0f;
 };
 
 }
 
 #endif // YAVE_COMPONENTS_POINTLIGHTCOMPONENT_H
+

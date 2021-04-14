@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,12 @@ SOFTWARE.
 #ifndef Y_UTILS_EXCEPT_H
 #define Y_UTILS_EXCEPT_H
 
+#include <stdexcept>
+
 #define y_throw_msg(msg) throw std::runtime_error(msg)
 
 namespace y {
 }
 
 #endif // Y_UTILS_EXCEPT_H
+

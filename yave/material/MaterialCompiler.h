@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,21 +22,17 @@ SOFTWARE.
 #ifndef YAVE_MATERIAL_MATERIALCOMPILER_H
 #define YAVE_MATERIAL_MATERIALCOMPILER_H
 
-#include <yave/yave.h>
-#include <yave/graphics/framebuffer/RenderPass.h>
-#include <yave/graphics/framebuffer/Viewport.h>
-
-#include "Material.h"
 #include "GraphicPipeline.h"
 
 namespace yave {
 
-class MaterialCompiler : NonCopyable, public DeviceLinked {
-	public:
-		static GraphicPipeline compile(const MaterialTemplate* material, const RenderPass& render_pass);
+class MaterialCompiler {
+    public:
+        static GraphicPipeline compile(const MaterialTemplate* material, const RenderPass& render_pass);
 };
 
 
 }
 
 #endif // YAVE_MATERIAL_MATERIALCOMPILER_H
+

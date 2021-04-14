@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,7 @@ SOFTWARE.
 #define YAVE_YAVE_H
 
 #include <yave/utils/forward.h>
-
-#include <y/utils.h>
-#include <y/utils/perf.h>
+#include <yave/utils/profile.h>
 
 #include <y/math/Transform.h>
 
@@ -43,7 +41,7 @@ using DevicePtr = const Device*;
 class ThreadLocalDevice;
 using ThreadDevicePtr = const ThreadLocalDevice*;
 
-
 }
 
 #endif // YAVE_YAVE_H
+

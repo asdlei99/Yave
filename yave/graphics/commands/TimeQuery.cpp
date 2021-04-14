@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,42 +21,44 @@ SOFTWARE.
 **********************************/
 
 #include "TimeQuery.h"
+#include "CmdBufferRecorder.h"
 
-#include <yave/device/Device.h>
+#include <yave/graphics/graphics.h>
 
 namespace yave {
 
-static VkQueryPool create_pool(DevicePtr dptr) {
-	VkQueryPoolCreateInfo create_info = vk_struct();
-	{
-		create_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
-		create_info.queryCount = 2;
-	}
+static VkQueryPool create_query_pool() {
+    VkQueryPoolCreateInfo create_info = vk_struct();
+    {
+        create_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+        create_info.queryCount = 2;
+    }
 
-	VkQueryPool pool = {};
-	vk_check(vkCreateQueryPool(dptr->vk_device(), &create_info, dptr->vk_allocation_callbacks(), &pool));
-	return pool;
+    VkQueryPool pool = {};
+    vk_check(vkCreateQueryPool(vk_device(), &create_info, vk_allocation_callbacks(), &pool));
+    return pool;
 }
 
-TimeQuery::TimeQuery(DevicePtr dptr)  : DeviceLinked(dptr), _pool(create_pool(dptr)) {
+TimeQuery::TimeQuery() : _pool(create_query_pool()) {
 }
 
 TimeQuery::~TimeQuery() {
-	destroy(_pool);
+    device_destroy(_pool);
 }
 
 void TimeQuery::start(CmdBufferRecorder& recorder) {
-	vkCmdWriteTimestamp(recorder.vk_cmd_buffer(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, _pool, 0);
+    vkCmdWriteTimestamp(recorder.vk_cmd_buffer(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, _pool, 0);
 }
 
 void TimeQuery::stop(CmdBufferRecorder& recorder) {
-	vkCmdWriteTimestamp(recorder.vk_cmd_buffer(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, _pool, 1);
+    vkCmdWriteTimestamp(recorder.vk_cmd_buffer(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, _pool, 1);
 }
 
 core::Duration TimeQuery::get() {
-	std::array<u64, 2> results;
-	vk_check(vkGetQueryPoolResults(device()->vk_device(), _pool, 0, 2, 2 * sizeof(u64), results.data(), 0, VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
-	return core::Duration::nanoseconds(results[1] - results[0]);
+    std::array<u64, 2> results;
+    vk_check(vkGetQueryPoolResults(vk_device(), _pool, 0, 2, 2 * sizeof(u64), results.data(), 0, VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
+    return core::Duration::nanoseconds(results[1] - results[0]);
 }
 
 }
+

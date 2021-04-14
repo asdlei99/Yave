@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,57 +23,71 @@ SOFTWARE.
 #define EDITOR_UTILS_FORWARD_H
 
 // Auto generated: forward definitions for most non template classes
-// TODO: Classes nested in namespaces or other classes will not be declared correctly
+// TODO: Nested classes will not be declared correctly
+
 namespace editor {
-class AssetSelector;
-class AssetStringifier;
-class CameraController;
-class CameraDebug;
-class CameraSettings;
-class ComponentWidgetData;
-class ContextLinked;
-class EditorComponent;
-class EditorContext;
-class EditorEntityPass;
-class EditorRenderer;
-class EditorRendererSettings;
-class EditorResources;
-class EditorState;
-class EngineView;
-class EntityView;
-class FPSCameraController;
-class FileBrowser;
-class FileRenamer;
-class FileSystemView;
-class Gizmo;
-class HoudiniCameraController;
-class ImGuiRenderer;
-class ImageImporter;
-class Logs;
-class MainWindow;
-class MaterialData;
 class MaterialEditor;
-class MemoryInfo;
-class MenuBar;
-class Notifications;
-class ObjectData;
-class PerfSettings;
-class PerformanceMetrics;
-class PickingManager;
-class PropertyPanel;
-class ResourceBrowser;
-class SceneData;
-class SceneImporter;
-class ScenePickingPass;
-class Selection;
-class Settings;
+struct Picker;
+struct Entry;
+class ImGuiPlatform;
+class Gizmo;
+class FileSystemView;
+class CameraDebug;
+class UiManager;
+class FileBrowser;
 class SettingsPanel;
-class SkeletonData;
-class ThumbmailCache;
-class Ui;
-class UiElement;
-class UiSettings;
+struct PlatformWindow;
+class Selection;
+class PerformanceMetrics;
+class AssetStringifier;
+class FileRenamer;
+struct EditorRendererSettings;
 class Widget;
+class EntityView;
+struct CameraSettings;
+struct UiSettings;
+class HoudiniCameraController;
+struct EditorSettings;
+class EditorComponent;
+class PlotData;
+class ResourceBrowser;
+class FunctionWidget;
+class ImGuiRenderer;
+struct ThumbmailData;
+struct IdBufferPass;
+class Preview;
+class EditorResources;
+class SceneImporter;
+class CameraController;
+struct PerfSettings;
+struct EditorAction;
+class Settings;
+struct EditorRenderer;
+struct CVar;
+struct DebugSettings;
+class CVarConsole;
+class FPSCameraController;
+struct EditorPass;
+class EngineView;
+class AssetSelector;
+class PropertyPanel;
+struct Msg;
+struct WidgetIdStack;
+class ImageImporter;
+struct PickingResult;
+class EditorWorld;
+class EditorApplication;
+class ThumbmailRenderer;
 }
+
+
+namespace editor::import {
+struct PrefabData;
+struct SubMeshData;
+struct SkeletonData;
+struct MaterialData;
+struct SceneData;
+}
+
 
 #endif // EDITOR_UTILS_FORWARD_H

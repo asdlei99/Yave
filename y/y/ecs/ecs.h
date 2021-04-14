@@ -30,8 +30,6 @@ namespace ecs {
 class EntityWorld;
 class Archetype;
 
-class ComponentInfoSerializerBase;
-class ComponentSerializerWrapper;
 class ComponentContainerBase;
 
 
@@ -43,78 +41,81 @@ u32 next_type_index();
 
 template<typename T>
 u32 type_index() {
-	static u32 index = detail::next_type_index();
-	return index;
+    static u32 index = detail::next_type_index();
+    return index;
 }
 
 
 
 class EntityID {
-	public:
-		explicit EntityID(u32 index = invalid_index, u32 version = 0) : _index(index), _version(version) {
-		}
+    public:
+        EntityID() : EntityID(invalid_index) {
+        }
 
-		void invalidate() {
-			_index = invalid_index;
-		}
+        explicit EntityID(u32 index, u32 version = 0) : _index(index), _version(version) {
+        }
 
-		u32 index() const {
-			return _index;
-		}
+        void invalidate() {
+            _index = invalid_index;
+        }
 
-		u32 version() const {
-			return _version;
-		}
+        u32 index() const {
+            return _index;
+        }
 
-		bool is_valid() const {
-			return _index != invalid_index;
-		}
+        u32 version() const {
+            return _version;
+        }
 
-		u64 as_u64() const {
-			return (u64(_index) << 32) | _version;
-		}
+        bool is_valid() const {
+            return _index != invalid_index;
+        }
 
-		bool operator==(const EntityID& other) const {
-			return _index == other._index && _version == other._version;
-		}
+        u64 as_u64() const {
+            return (u64(_index) << 32) | _version;
+        }
 
-		bool operator!=(const EntityID& other) const {
-			return !operator==(other);
-		}
+        bool operator==(const EntityID& other) const {
+            return _index == other._index && _version == other._version;
+        }
 
-	private:
-		static constexpr u32 invalid_index = u32(-1);
+        bool operator!=(const EntityID& other) const {
+            return !operator==(other);
+        }
 
-		u32 _index = invalid_index;
-		u32 _version = 0;
+    private:
+        static constexpr u32 invalid_index = u32(-1);
+
+        u32 _index = invalid_index;
+        u32 _version = 0;
 };
 
 
 
 struct EntityData {
-	EntityID id;
-	Archetype* archetype = nullptr;
-	usize archetype_index = usize(-1);
+    EntityID id;
+    Archetype* archetype = nullptr;
+    usize archetype_index = usize(-1);
 
-	void invalidate() {
-		// Keep the version
-		id.invalidate();
-		archetype = nullptr;
-	}
+    void invalidate() {
+        // Keep the version
+        id.invalidate();
+        archetype = nullptr;
+    }
 
-	bool is_valid() const {
-		return id.is_valid();
-	}
+    bool is_valid() const {
+        return id.is_valid();
+    }
 };
 
 
 
 template<typename... Args>
 struct StaticArchetype {
-	static constexpr usize component_count = sizeof...(Args);
+    static constexpr usize component_count = sizeof...(Args);
 
-	template<typename... E>
-	using with = StaticArchetype<Args..., E...>;
+    template<typename... E>
+    using with = StaticArchetype<Args..., E...>;
 };
 
 
@@ -123,3 +124,4 @@ struct StaticArchetype {
 }
 
 #endif // Y_ECS_ECS_H
+

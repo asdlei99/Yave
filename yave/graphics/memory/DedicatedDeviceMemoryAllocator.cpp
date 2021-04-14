@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,38 +25,39 @@ SOFTWARE.
 
 namespace yave {
 
-DedicatedDeviceMemoryAllocator::DedicatedDeviceMemoryAllocator(DevicePtr dptr, MemoryType type) : DeviceMemoryHeapBase(dptr), _type(type) {
+DedicatedDeviceMemoryAllocator::DedicatedDeviceMemoryAllocator(MemoryType type) : _type(type) {
 }
 
 DedicatedDeviceMemoryAllocator::~DedicatedDeviceMemoryAllocator() {
 }
 
 core::Result<DeviceMemory> DedicatedDeviceMemoryAllocator::alloc(VkMemoryRequirements reqs) {
-	_size += reqs.size;
-	return core::Ok(DeviceMemory(this, alloc_memory(device(), reqs, _type), 0, reqs.size));
+    _size += reqs.size;
+    return core::Ok(DeviceMemory(this, alloc_memory(reqs, _type), 0, reqs.size));
 }
 
 void DedicatedDeviceMemoryAllocator::free(const DeviceMemory& memory) {
-	if(memory.vk_offset()) {
-		y_fatal("Tried to free memory using non zero offset.");
-	}
-	_size -= memory.vk_size();
-	vkFreeMemory(device()->vk_device(), memory.vk_memory(), device()->vk_allocation_callbacks());
+    if(memory.vk_offset()) {
+        y_fatal("Tried to free memory using non zero offset.");
+    }
+    _size -= memory.vk_size();
+    vkFreeMemory(vk_device(), memory.vk_memory(), vk_allocation_callbacks());
 }
 
 void* DedicatedDeviceMemoryAllocator::map(const DeviceMemoryView& view) {
-	void* mapping = nullptr;
-	const VkMemoryMapFlags flags = {};
-	vk_check(vkMapMemory(device()->vk_device(), view.vk_memory(), view.vk_offset(), VK_WHOLE_SIZE, flags, &mapping));
-	return mapping;
+    void* mapping = nullptr;
+    const VkMemoryMapFlags flags = {};
+    vk_check(vkMapMemory(vk_device(), view.vk_memory(), view.vk_offset(), VK_WHOLE_SIZE, flags, &mapping));
+    return mapping;
 }
 
 void DedicatedDeviceMemoryAllocator::unmap(const DeviceMemoryView& view) {
-	vkUnmapMemory(device()->vk_device(), view.vk_memory());
+    vkUnmapMemory(vk_device(), view.vk_memory());
 }
 
 usize DedicatedDeviceMemoryAllocator::allocated_size() const {
-	return _size;
+    return _size;
 }
 
 }
+

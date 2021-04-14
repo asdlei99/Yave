@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,15 @@ SOFTWARE.
 
 #include <yave/yave.h>
 
+#include <array>
+
 namespace yave {
 
 struct Vertex {
-	math::Vec3 position;
-	math::Vec3 normal;
-	math::Vec3 tangent;
-	math::Vec2 uv;
+    math::Vec3 position;
+    math::Vec3 normal;
+    math::Vec3 tangent;
+    math::Vec2 uv;
 };
 
 using IndexedTriangle = std::array<u32, 3>;
@@ -38,15 +40,15 @@ using IndexedTriangle = std::array<u32, 3>;
 static_assert(sizeof(IndexedTriangle) == 3 * sizeof(u32));
 
 struct SkinWeights {
-	static constexpr usize size = 4;
+    static constexpr usize size = 4;
 
-	math::Vec<size, u32> indexes;
-	math::Vec<size, float> weights;
+    math::Vec<size, u32> indexes;
+    math::Vec<size, float> weights;
 };
 
 struct SkinnedVertex {
-	Vertex vertex;
-	SkinWeights weights;
+    Vertex vertex;
+    SkinWeights weights;
 };
 
 static_assert(std::is_trivially_copyable_v<SkinnedVertex>, "SkinnedVertex should be trivially copyable");
@@ -55,3 +57,4 @@ static_assert(std::is_trivially_copyable_v<IndexedTriangle>, "IndexedTriangle sh
 }
 
 #endif // YAVE_MESHES_VERTEX_H
+

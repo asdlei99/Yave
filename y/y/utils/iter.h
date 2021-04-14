@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,23 +32,23 @@ struct EndIterator {};
 
 // this might cause ambiguities
 template<typename T>
-bool operator==(EndIterator, const T& other) {
-	return other.at_end();
+inline bool operator==(EndIterator, const T& other) {
+    return other.at_end();
 }
 
 template<typename T>
-bool operator==(const T& other, EndIterator) {
-	return other.at_end();
+inline bool operator==(const T& other, EndIterator) {
+    return other.at_end();
 }
 
 template<typename T>
-bool operator!=(EndIterator, const T& other) {
-	return !other.at_end();
+inline bool operator!=(EndIterator, const T& other) {
+    return !other.at_end();
 }
 
 template<typename T>
-bool operator!=(const T& other, EndIterator) {
-	return !other.at_end();
+inline bool operator!=(const T& other, EndIterator) {
+    return !other.at_end();
 }
 
 
@@ -56,374 +56,439 @@ bool operator!=(const T& other, EndIterator) {
 
 template<typename It, typename Transform>
 class TransformIterator : private Transform {
-	using iterator_type = It;
-	using iterator_traits = std::iterator_traits<iterator_type>;
+    using iterator_type = It;
+    using iterator_traits = std::iterator_traits<iterator_type>;
 
 
-	using raw_value_type = decltype(std::declval<Transform>()(*std::declval<It>()));
+    using raw_value_type = decltype(std::declval<Transform>()(*std::declval<It>()));
 
-	public:
-		using value_type = std::remove_reference_t<raw_value_type>;
+    public:
+        using value_type = std::remove_reference_t<raw_value_type>;
 
-		using difference_type = typename iterator_traits::difference_type;
-		using iterator_category = typename iterator_traits::iterator_category;
+        using difference_type = typename iterator_traits::difference_type;
+        using iterator_category = typename iterator_traits::iterator_category;
 
-		using reference = value_type&;
-		using pointer = value_type*;
+        using reference = value_type&;
+        using pointer = value_type*;
 
-		TransformIterator() = default;
-		TransformIterator(TransformIterator&&) = default;
-		TransformIterator(const TransformIterator&) = default;
+        inline TransformIterator() = default;
+        inline TransformIterator(TransformIterator&&) = default;
+        inline TransformIterator(const TransformIterator&) = default;
 
-		TransformIterator& operator=(TransformIterator&& other) {
-			_it = std::move(other._it);
-			Transform::operator=(std::move(other));
-			return *this;
-		}
+        inline TransformIterator& operator=(TransformIterator&& other) {
+            _it = std::move(other._it);
+            Transform::operator=(std::move(other));
+            return *this;
+        }
 
-		TransformIterator& operator=(const TransformIterator& other) {
-			_it = other._it;
-			Transform::operator=(other);
-			return *this;
-		}
+        inline TransformIterator& operator=(const TransformIterator& other) {
+            _it = other._it;
+            Transform::operator=(other);
+            return *this;
+        }
 
-		TransformIterator(iterator_type it, const Transform& tr = Transform()) : Transform(tr), _it(it) {
-		}
+        inline TransformIterator(iterator_type it, const Transform& tr = Transform()) : Transform(tr), _it(it) {
+        }
 
-		//template<typename = std::enable_if_t<has_at_end_v<iterator_type>>>
-		bool at_end() const {
-			static_assert(has_at_end_v<iterator_type>);
-			return _it.at_end();
-		}
+        //template<typename = std::enable_if_t<has_at_end_v<iterator_type>>>
+        inline bool at_end() const {
+            static_assert(has_at_end_v<iterator_type>);
+            return _it.at_end();
+        }
 
-		TransformIterator& operator++() {
-			++_it;
-			return *this;
-		}
+        inline TransformIterator& operator++() {
+            ++_it;
+            return *this;
+        }
 
-		TransformIterator operator++(int) {
-			const iterator_type it = _it;
-			++_it;
-			return TransformIterator(it, *this);
-		}
+        inline TransformIterator operator++(int) {
+            const iterator_type it = _it;
+            ++_it;
+            return TransformIterator(it, *this);
+        }
 
-		TransformIterator& operator--() {
-			--_it;
-			return *this;
-		}
+        inline TransformIterator& operator--() {
+            --_it;
+            return *this;
+        }
 
-		TransformIterator operator--(int) {
-			const iterator_type it = _it;
-			--_it;
-			return TransformIterator(it, *this);
-		}
+        inline TransformIterator operator--(int) {
+            const iterator_type it = _it;
+            --_it;
+            return TransformIterator(it, *this);
+        }
 
-		bool operator==(const TransformIterator& other) const {
-			return _it == other._it;
-		}
+        inline bool operator==(const TransformIterator& other) const {
+            return _it == other._it;
+        }
 
-		bool operator!=(const TransformIterator& other) const {
-			return _it != other._it;
-		}
+        inline bool operator!=(const TransformIterator& other) const {
+            return _it != other._it;
+        }
 
-		decltype(auto) operator*() const {
-			return Transform::operator()(*_it);
-		}
+        inline decltype(auto) operator*() const {
+            return Transform::operator()(*_it);
+        }
 
-		auto* operator->() const {
-			static_assert(std::is_reference_v<raw_value_type>);
-			return &Transform::operator()(*_it);
-		}
-
-
-		TransformIterator operator+(usize i) const {
-			return TransformIterator(_it + i, *this);
-		}
-
-		TransformIterator operator-(usize i) const {
-			return TransformIterator(_it - i, *this);
-		}
-
-		TransformIterator& operator+=(usize i) const {
-			_it += i;
-			return *this;
-		}
-
-		TransformIterator& operator-=(usize i) const {
-			_it -= i;
-			return *this;
-		}
+        inline auto* operator->() const {
+            static_assert(std::is_reference_v<raw_value_type>);
+            return &Transform::operator()(*_it);
+        }
 
 
+        inline TransformIterator operator+(usize i) const {
+            return TransformIterator(_it + i, *this);
+        }
 
-		bool operator==(const iterator_type& other) const {
-			return _it == other;
-		}
+        inline TransformIterator operator-(usize i) const {
+            return TransformIterator(_it - i, *this);
+        }
 
-		bool operator!=(const iterator_type& other) const {
-			return _it != other;
-		}
+        inline TransformIterator& operator+=(usize i) const {
+            _it += i;
+            return *this;
+        }
+
+        inline TransformIterator& operator-=(usize i) const {
+            _it -= i;
+            return *this;
+        }
 
 
 
-		const iterator_type& inner() const {
-			return _it;
-		}
+        inline bool operator==(const iterator_type& other) const {
+            return _it == other;
+        }
 
-	private:
-		iterator_type _it;
+        inline bool operator!=(const iterator_type& other) const {
+            return _it != other;
+        }
+
+
+
+        inline const iterator_type& inner() const {
+            return _it;
+        }
+
+    private:
+        iterator_type _it;
 };
 
 template<typename It, typename Filter, typename End = It>
 class FilterIterator : private Filter {
-	using iterator_type = It;
-	using end_iterator_type = End;
-	using iterator_traits = std::iterator_traits<iterator_type>;
+    using iterator_type = It;
+    using end_iterator_type = End;
+    using iterator_traits = std::iterator_traits<iterator_type>;
 
-	public:
-		using value_type = std::remove_reference_t<decltype(*std::declval<It>())>;
+    public:
+        using value_type = std::remove_reference_t<decltype(*std::declval<It>())>;
 
-		using difference_type = typename iterator_traits::difference_type;
-		using iterator_category = std::forward_iterator_tag;
+        using difference_type = typename iterator_traits::difference_type;
+        using iterator_category = std::forward_iterator_tag;
 
-		using reference = value_type&;
-		using pointer = value_type*;
+        using reference = value_type&;
+        using pointer = value_type*;
 
-		FilterIterator() = default;
-		FilterIterator(FilterIterator&&) = default;
-		FilterIterator(const FilterIterator&) = default;
+        inline FilterIterator() = default;
+        inline FilterIterator(FilterIterator&&) = default;
+        inline FilterIterator(const FilterIterator&) = default;
 
-		FilterIterator& operator=(FilterIterator&& other) {
-			_it = std::move(other._it);
-			_end = std::move(other._end);
-			Filter::operator=(std::move(other));
-			return *this;
-		}
+        inline FilterIterator& operator=(FilterIterator&& other) {
+            _it = std::move(other._it);
+            _end = std::move(other._end);
+            Filter::operator=(std::move(other));
+            return *this;
+        }
 
-		FilterIterator& operator=(const FilterIterator& other) {
-			_it = other._it;
-			_end = other._end;
-			Filter::operator=(other);
-			return *this;
-		}
+        inline FilterIterator& operator=(const FilterIterator& other) {
+            _it = other._it;
+            _end = other._end;
+            Filter::operator=(other);
+            return *this;
+        }
 
-		FilterIterator(iterator_type it, end_iterator_type end, const Filter& ft = Filter()) : Filter(ft), _it(it), _end(end) {
-			find_next_valid();
-		}
+        inline FilterIterator(iterator_type it, end_iterator_type end, const Filter& ft = Filter()) : Filter(ft), _it(it), _end(end) {
+            find_next_valid();
+        }
 
-		void advance() {
-			y_debug_assert(!at_end());
-			++_it;
-			find_next_valid();
-		}
+        inline void advance() {
+            y_debug_assert(!at_end());
+            ++_it;
+            find_next_valid();
+        }
 
-		bool at_end() const {
-			return _it == _end;
-		}
+        inline bool at_end() const {
+            return _it == _end;
+        }
 
-		FilterIterator& operator++() {
-			advance();
-			return *this;
-		}
+        inline FilterIterator& operator++() {
+            advance();
+            return *this;
+        }
 
-		FilterIterator operator++(int) {
-			const iterator_type it = _it;
-			advance();
-			return FilterIterator(it, _end, *this);
-		}
+        inline FilterIterator operator++(int) {
+            const iterator_type it = _it;
+            advance();
+            return FilterIterator(it, _end, *this);
+        }
 
-		bool operator==(const FilterIterator& other) const {
-			return _it == other._it;
-		}
+        inline bool operator==(const FilterIterator& other) const {
+            return _it == other._it;
+        }
 
-		bool operator!=(const FilterIterator& other) const {
-			return _it != other._it;
-		}
+        inline bool operator!=(const FilterIterator& other) const {
+            return _it != other._it;
+        }
 
-		decltype(auto) operator*() const {
-			y_debug_assert(!at_end());
-			return *_it;
-		}
+        inline decltype(auto) operator*() const {
+            y_debug_assert(!at_end());
+            return *_it;
+        }
 
-		auto* operator->() const {
-			y_debug_assert(!at_end());
-			return *_it;
-		}
-
-
-
-		bool operator==(const iterator_type& other) const {
-			return _it == other;
-		}
-
-		bool operator!=(const iterator_type& other) const {
-			return _it != other;
-		}
+        inline auto* operator->() const {
+            y_debug_assert(!at_end());
+            return *_it;
+        }
 
 
 
-		const iterator_type& inner() const {
-			return _it;
-		}
+        inline bool operator==(const iterator_type& other) const {
+            return _it == other;
+        }
 
-	private:
-		void find_next_valid() {
-			while(!at_end()) {
-				if(Filter::operator()(*_it)) {
-					break;
-				}
-				++_it;
-			}
-		}
+        inline bool operator!=(const iterator_type& other) const {
+            return _it != other;
+        }
 
-		iterator_type _it;
-		end_iterator_type _end;
+
+
+        inline const iterator_type& inner() const {
+            return _it;
+        }
+
+    private:
+        inline void find_next_valid() {
+            while(!at_end()) {
+                if(Filter::operator()(*_it)) {
+                    break;
+                }
+                ++_it;
+            }
+        }
+
+        iterator_type _it;
+        end_iterator_type _end;
 };
+
+
+class IndexIterator {
+    public:
+        using value_type = usize;
+        using difference_type = usize;
+        using iterator_category = std::random_access_iterator_tag;
+        using reference = value_type&;
+        using pointer = value_type*;
+
+        inline IndexIterator(value_type i = 0) : _it(i) {
+        }
+
+        inline IndexIterator& operator++() {
+            ++_it;
+            return *this;
+        }
+
+        inline IndexIterator operator++(int) {
+            const IndexIterator it = *this;
+            ++_it;
+            return it;
+        }
+
+        inline IndexIterator& operator--() {
+            --_it;
+            return *this;
+        }
+
+        inline IndexIterator operator--(int) {
+            const IndexIterator it = *this;
+            --_it;
+            return it;
+        }
+
+        inline bool operator==(const IndexIterator& other) const {
+            return _it == other._it;
+        }
+
+        inline bool operator!=(const IndexIterator& other) const {
+            return _it != other._it;
+        }
+
+        inline value_type operator*() const {
+            return _it;
+        }
+
+        inline IndexIterator operator+(usize i) const {
+            return IndexIterator(_it + i);
+        }
+
+        inline IndexIterator operator-(usize i) const {
+            return IndexIterator(_it - i);
+        }
+
+        inline IndexIterator& operator+=(usize i) {
+            _it += i;
+            return *this;
+        }
+
+        inline IndexIterator& operator-=(usize i) {
+            _it -= i;
+            return *this;
+        }
+
+    private:
+        value_type _it;
+};
+
 
 
 template<typename T>
 class ScalarIterator;
 template<typename T>
 class ScalarEndIterator {
-	public:
-		using value_type = T;
-		static_assert(std::is_scalar_v<value_type>);
+    public:
+        using value_type = T;
+        static_assert(std::is_scalar_v<value_type>);
 
-		ScalarEndIterator(T t = T(0)) : _end(t) {
-		}
+        inline ScalarEndIterator(T t = T(0)) : _end(t) {
+        }
 
-		bool operator==(const ScalarEndIterator& other) const {
-			return _end == other._end;
-		}
+        inline bool operator==(const ScalarEndIterator& other) const {
+            return _end == other._end;
+        }
 
-		bool operator!=(const ScalarEndIterator& other) const {
-			return _end != other._end;
-		}
+        inline bool operator!=(const ScalarEndIterator& other) const {
+            return _end != other._end;
+        }
 
-		value_type operator*() const {
-			return _end;
-		}
+        inline value_type operator*() const {
+            return _end;
+        }
 
-	private:
-		friend class ScalarIterator<T>;
+    private:
+        friend class ScalarIterator<T>;
 
-		T _end;
+        T _end;
 };
 
 template<typename T>
 class ScalarIterator {
-	public:
-		using value_type = T;
-		using difference_type = usize;
-		using iterator_category = std::random_access_iterator_tag;
-		using reference = value_type&;
-		using pointer = value_type*;
+    public:
+        using value_type = T;
+        using difference_type = usize;
+        using iterator_category = std::random_access_iterator_tag;
+        using reference = value_type&;
+        using pointer = value_type*;
 
-		static_assert(std::is_scalar_v<value_type>);
+        static_assert(std::is_scalar_v<value_type>);
 
-		ScalarIterator(T t = T(0), T step = T(1)) : _it(t), _step(step) {
-			y_debug_assert(_step != T(0));
-		}
+        inline ScalarIterator(T t = T(0), T step = T(1)) : _it(t), _step(step) {
+            y_debug_assert(_step != T(0));
+        }
 
-		ScalarIterator& operator++() {
-			_it += _step;
-			return *this;
-		}
+        inline ScalarIterator& operator++() {
+            _it += _step;
+            return *this;
+        }
 
-		ScalarIterator operator++(int) {
-			const ScalarIterator it = *this;
-			_it += _step;
-			return it;
-		}
+        inline ScalarIterator operator++(int) {
+            const ScalarIterator it = *this;
+            _it += _step;
+            return it;
+        }
 
-		ScalarIterator& operator--() {
-			_it -= _step;
-			return *this;
-		}
+        inline ScalarIterator& operator--() {
+            _it -= _step;
+            return *this;
+        }
 
-		ScalarIterator operator--(int) {
-			const ScalarIterator it = *this;
-			_it -= _step;
-			return it;
-		}
+        inline ScalarIterator operator--(int) {
+            const ScalarIterator it = *this;
+            _it -= _step;
+            return it;
+        }
 
-		bool operator==(const ScalarIterator& other) const {
-			return _it == other._it;
-		}
+        inline bool operator==(const ScalarIterator& other) const {
+            return _it == other._it;
+        }
 
-		bool operator!=(const ScalarIterator& other) const {
-			return _it != other._it;
-		}
+        inline bool operator!=(const ScalarIterator& other) const {
+            return _it != other._it;
+        }
 
-		bool operator==(const ScalarEndIterator<T>& other) const {
-			return (_it > other._end) != (_it - _step > other._end);
-		}
+        inline bool operator==(const ScalarEndIterator<T>& other) const {
+            return (_it > other._end) != (_it - _step > other._end);
+        }
 
-		bool operator!=(const ScalarEndIterator<T>& other) const {
-			return !operator==(other);
-		}
+        inline bool operator!=(const ScalarEndIterator<T>& other) const {
+            return !operator==(other);
+        }
 
-		value_type operator*() const {
-			return _it;
-		}
+        inline value_type operator*() const {
+            return _it;
+        }
 
-		const pointer* operator->() const {
-			return &_it;
-		}
+        inline ScalarIterator operator+(usize i) const {
+            return ScalarIterator(_it + (i * _step));
+        }
 
-		ScalarIterator operator+(usize i) const {
-			return ScalarIterator(_it + (i * _step));
-		}
+        inline ScalarIterator operator-(usize i) const {
+            return ScalarIterator(_it - (i * _step));
+        }
 
-		ScalarIterator operator-(usize i) const {
-			return ScalarIterator(_it - (i * _step));
-		}
+        inline ScalarIterator& operator+=(usize i) {
+            _it += (i * _step);
+            return *this;
+        }
 
-		ScalarIterator& operator+=(usize i) const {
-			_it += (i * _step);
-			return *this;
-		}
+        inline ScalarIterator& operator-=(usize i) {
+            _it -= (i * _step);
+            return *this;
+        }
 
-		ScalarIterator& operator-=(usize i) const {
-			_it -= (i * _step);
-			return *this;
-		}
+        inline T step() const {
+            return _step;
+        }
 
-		T step() const {
-			return _step;
-		}
-
-	private:
-		T _it;
-		T _step;
+    private:
+        T _it;
+        T _step;
 };
 
 template<typename T>
-bool operator==(const ScalarEndIterator<T>& end, const ScalarIterator<T>& other) {
-	return other == end;
+inline bool operator==(const ScalarEndIterator<T>& end, const ScalarIterator<T>& other) {
+    return other == end;
 }
 
 template<typename T>
-bool operator!=(const ScalarEndIterator<T>& end, const ScalarIterator<T>& other) {
-	return other != end;
+inline bool operator!=(const ScalarEndIterator<T>& end, const ScalarIterator<T>& other) {
+    return other != end;
 }
 
 template<typename T>
-usize operator-(const ScalarEndIterator<T>& end, const ScalarIterator<T>& it) {
-	return static_cast<usize>((*end - *it) / it.step());
+inline usize operator-(const ScalarEndIterator<T>& end, const ScalarIterator<T>& it) {
+    return static_cast<usize>((*end - *it) / it.step());
 }
 
 
 
 template<typename T>
-auto srange(T start, T end, T step) {
-	return core::Range(ScalarIterator<T>(start, step), ScalarEndIterator<T>(end));
+inline auto srange(T start, T end, T step) {
+    return core::Range(ScalarIterator<T>(start, step), ScalarEndIterator<T>(end));
 }
 
 template<typename T>
-auto srange(T start, T end) {
-	const T step = start < end ? T(1) : T(-1);
-	return core::Range(ScalarIterator<T>(start, step), ScalarEndIterator<T>(end));
+inline auto srange(T start, T end) {
+    const T step = start < end ? T(1) : T(-1);
+    return core::Range(ScalarIterator<T>(start, step), ScalarEndIterator<T>(end));
 }
 
 
@@ -434,10 +499,10 @@ auto srange(T start, T end) {
 namespace detail {
 template<usize I>
 struct TupleUnpacker {
-	template<typename T>
-	decltype(auto) operator()(T&& t) const {
-		return std::get<I>(y_fwd(t));
-	}
+    template<typename T>
+    inline decltype(auto) operator()(T&& t) const {
+        return std::get<I>(y_fwd(t));
+    }
 };
 }
 
@@ -449,3 +514,4 @@ using TupleMemberIterator = TransformIterator<It, detail::TupleUnpacker<I>>;
 
 
 #endif // Y_UTILS_ITER_H
+

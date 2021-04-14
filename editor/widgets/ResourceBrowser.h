@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,55 +22,62 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_RESOURCEBROWSER_H
 #define EDITOR_WIDGETS_RESOURCEBROWSER_H
 
+#include "FileSystemView.h"
+
 #include <yave/assets/AssetId.h>
 
-#include "FileSystemView.h"
+#include <y/core/FixedArray.h>
+
 
 namespace editor {
 
-class ResourceBrowser : public FileSystemView, public ContextLinked {
-	public:
-		ResourceBrowser(ContextPtr ctx);
+class ResourceBrowser : public FileSystemView {
 
-	protected:
-		ResourceBrowser(ContextPtr ctx, std::string_view title);
+    editor_widget(ResourceBrowser, "View")
 
-		AssetId asset_id(std::string_view name) const;
-		AssetType read_file_type(AssetId id) const;
+    public:
+        ResourceBrowser();
 
-		virtual void asset_selected(AssetId) {}
+    protected:
+        ResourceBrowser(std::string_view title);
 
-	protected:
-		void update() override;
+        void on_gui() override;
 
-		void paint_ui(CmdBufferRecorder& recorder, const FrameToken& token) override;
-		void paint_context_menu() override;
-		void path_changed() override;
+        AssetId asset_id(std::string_view name) const;
+        AssetType read_file_type(AssetId id) const;
 
-		core::Result<core::String> entry_icon(const core::String& name, EntryType type) const override;
-		void entry_hoverred(const Entry* entry) override;
-		void entry_clicked(const Entry& entry) override;
+        virtual void asset_selected(AssetId) {}
 
-		bool is_searching() const;
+    protected:
+        void update() override;
 
-	private:
-		void paint_search_results(float width = 0.0f);
-		void paint_preview(float width = 0.0f);
-		void paint_path_bar();
-		void paint_import_menu();
+        void draw_context_menu() override;
+        void path_changed() override;
 
-		void update_search();
+        core::Result<core::String> entry_icon(const core::String& name, EntryType type) const override;
+        void entry_hoverred(const Entry* entry) override;
+        void entry_clicked(const Entry& entry) override;
 
-		core::Vector<core::String> _path_pieces;
-		core::Vector<core::String> _jump_menu;
+        bool is_searching() const;
 
-		std::unique_ptr<core::Vector<Entry>> _search_results;
-		core::FixedArray<char> _search_pattern = core::FixedArray<char>(256);
+    private:
+        void draw_search_results();
+        void draw_top_bar();
+        void draw_import_menu();
 
-		core::String _set_path_deferred;
-		AssetId _preview_id;
+        void update_search();
+
+        core::Vector<core::String> _path_pieces;
+        core::Vector<core::String> _jump_menu;
+
+        std::unique_ptr<core::Vector<Entry>> _search_results;
+        core::FixedArray<char> _search_pattern = core::FixedArray<char>(256);
+
+        core::String _set_path_deferred;
+        AssetId _preview_id;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_RESOURCEBROWSER_H
+

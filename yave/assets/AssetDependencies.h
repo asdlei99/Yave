@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Gr�goire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,25 @@ SOFTWARE.
 namespace yave {
 
 class AssetDependencies {
-	public:
-		AssetDependencies(AssetLoadingFlags flags = AssetLoadingFlags::None);
+    public:
+        AssetDependencies(AssetLoadingFlags flags = AssetLoadingFlags::None);
 
-		void add_dependency(GenericAssetPtr asset);
+        void add_dependency(GenericAssetPtr asset);
 
-		bool is_done() const;
-		bool is_empty() const;
-		AssetLoadingState state() const;
-		AssetLoadingErrorType error() const;
+        usize dependency_count() const;
 
-	private:
-		core::Vector<GenericAssetPtr> _deps;
-		AssetLoadingFlags _flags;
+        bool is_done() const;
+        bool is_empty() const;
+        AssetLoadingState state() const;
+        AssetLoadingErrorType error() const;
+
+
+    private:
+        core::Vector<GenericAssetPtr> _deps;
+        AssetLoadingFlags _flags;
 };
 
 }
 
 #endif // YAVE_ASSETS_ASSETDEPENDENCIES_H
+

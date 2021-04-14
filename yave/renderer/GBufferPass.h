@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,18 @@ SOFTWARE.
 namespace yave {
 
 struct GBufferPass {
-	SceneRenderSubPass scene_pass;
+    SceneRenderSubPass scene_pass;
 
-	FrameGraphImageId depth;
-	FrameGraphImageId color;
-	FrameGraphImageId normal;
+    FrameGraphImageId depth;
+    FrameGraphImageId color;
+    FrameGraphImageId normal;
+    FrameGraphImageId emissive;
 
-	static GBufferPass create(FrameGraph& framegraph, const SceneView& view, const math::Vec2ui& size);
+    static GBufferPass create(FrameGraph& framegraph, const SceneView& view, const math::Vec2ui& size);
 };
 
 }
 
 
 #endif // YAVE_RENDERER_GBUFFERPASS_H
+

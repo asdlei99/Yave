@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,40 +22,39 @@ SOFTWARE.
 
 #include "entities.h"
 
-#include <yave/ecs/EntityWorld.h>
-
 #include <yave/components/TransformableComponent.h>
 #include <yave/components/StaticMeshComponent.h>
 #include <yave/components/PointLightComponent.h>
 #include <yave/components/SpotLightComponent.h>
+#include <yave/ecs/EntityWorld.h>
 
+#include <yave/meshes/AABB.h>
 
 namespace yave {
 
-core::Result<float> entity_radius(ecs::EntityWorld& world, ecs::EntityId id) {
-	if(const StaticMeshComponent* mesh = world.component<StaticMeshComponent>(id)) {
-		if(mesh->mesh()) {
-			return core::Ok(mesh->mesh()->radius());
-		}
-	}
+core::Result<float> entity_radius(const ecs::EntityWorld& world, ecs::EntityId id) {
+    if(const StaticMeshComponent* mesh = world.component<StaticMeshComponent>(id)) {
+        return core::Ok(mesh->aabb().origin_radius());
+    }
 
-	if(const PointLightComponent* light = world.component<PointLightComponent>(id)) {
-		return core::Ok(light->radius());
-	}
+    if(const PointLightComponent* light = world.component<PointLightComponent>(id)) {
+        return core::Ok(light->radius());
+    }
 
-	if(const SpotLightComponent* light = world.component<SpotLightComponent>(id)) {
-		return core::Ok(light->radius());
-	}
+    if(const SpotLightComponent* light = world.component<SpotLightComponent>(id)) {
+        return core::Ok(light->radius());
+    }
 
-	return core::Err();
+    return core::Err();
 }
 
-core::Result<math::Vec3> entity_position(ecs::EntityWorld& world, ecs::EntityId id) {
-	if(const TransformableComponent* tr = world.component<TransformableComponent>(id)) {
-		return core::Ok(tr->transform().position());
-	}
+core::Result<math::Vec3> entity_position(const ecs::EntityWorld& world, ecs::EntityId id) {
+    if(const TransformableComponent* tr = world.component<TransformableComponent>(id)) {
+        return core::Ok(tr->transform().position());
+    }
 
-	return core::Err();
+    return core::Err();
 }
 
 }
+

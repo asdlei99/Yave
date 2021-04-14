@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,22 +28,19 @@ namespace yave {
 
 class DescriptorSetBase {
 
-	public:
-		DescriptorSetBase() = default;
+    public:
+        DescriptorSetBase() = default;
 
-		bool is_null() const {
-			return !_set;
-		}
+        bool is_null() const {
+            return !_set;
+        }
 
-		VkDescriptorSet vk_descriptor_set() const {
-			return _set;
-		}
+        VkDescriptorSet vk_descriptor_set() const {
+            return _set;
+        }
 
-	protected:
-		// helpers for parent classes
-		void update_set(DevicePtr dptr, core::Span<Descriptor> bindings);
-
-		VkDescriptorSet _set = {};
+    protected:
+        VkDescriptorSet _set = {};
 };
 
 static_assert(sizeof(DescriptorSetBase) == sizeof(VkDescriptorSet));
@@ -51,3 +48,4 @@ static_assert(sizeof(DescriptorSetBase) == sizeof(VkDescriptorSet));
 }
 
 #endif // YAVE_GRAPHICS_DESCRIPTORS_DESCRIPTORSETBASE_H
+

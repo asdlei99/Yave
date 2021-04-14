@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,18 @@ SOFTWARE.
 namespace yave {
 
 enum class AssetType : u32 {
-	Mesh = 1,
-	Image = 2,
-	Animation = 3,
-	Font = 4,
-	Scene = 5,
-	Material = 6,
-	World = 7,
+    Mesh = 1,
+    Image = 2,
+    Animation = 3,
+    Font = 4,
+    Scene = 5,
+    Material = 6,
+    Prefab = 7,
 
-	Unknown = u32(-1)
+    Unknown = u32(-1)
 };
 
 }
 
 #endif // YAVE_ASSETS_ASSETTYPE_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,22 +22,44 @@ SOFTWARE.
 #ifndef YAVE_GRAPHICS_COMMANDS_CMDBUFFER_H
 #define YAVE_GRAPHICS_COMMANDS_CMDBUFFER_H
 
-#include "CmdBufferBase.h"
+#include <yave/graphics/commands/CmdBufferData.h>
 
 namespace yave {
 
-template<CmdBufferUsage Usage>
-class CmdBuffer : public CmdBufferBase {
+struct CmdBuffer : NonCopyable {
+    public:
+        CmdBuffer() = default;
 
-	public:
-		CmdBuffer() = default;
+        CmdBuffer(CmdBuffer&& other);
+        CmdBuffer& operator=(CmdBuffer&& other);
 
-	private:
-		friend class CmdBufferPool<Usage>;
+        ~CmdBuffer();
 
-		using CmdBufferBase::CmdBufferBase;
+        VkCommandBuffer vk_cmd_buffer() const;
+        VkFence vk_fence() const;
+        ResourceFence resource_fence() const;
+
+        void wait() const;
+
+        template<typename T>
+        void keep_alive(T&& t) {
+            _data->keep_alive(y_fwd(t));
+        }
+
+    protected:
+        CmdBuffer(CmdBufferData* data);
+
+        void swap(CmdBuffer& other);
+
+    private:
+        friend class CmdBufferPool;
+        friend class Queue;
+
+        CmdBufferData* _data = nullptr;
+
 };
 
 }
 
-#endif // YAVE_COMMANDS_CMDBUFFERSTATE_H
+#endif // YAVE_GRAPHICS_COMMANDS_CMDBUFFER_H
+

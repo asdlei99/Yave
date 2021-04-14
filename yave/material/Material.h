@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,37 +22,38 @@ SOFTWARE.
 #ifndef YAVE_MATERIAL_MATERIAL_H
 #define YAVE_MATERIAL_MATERIAL_H
 
-#include "MaterialTemplate.h"
 #include "SimpleMaterialData.h"
+
+#include <yave/graphics/descriptors/DescriptorSet.h>
 
 namespace yave {
 
 class Material final : NonCopyable {
 
-	public:
-		Material() = default;
-		Material(DevicePtr dptr, SimpleMaterialData&& data);
-		Material(const MaterialTemplate* tmp, SimpleMaterialData&& data = SimpleMaterialData());
+    public:
+        Material() = default;
+        Material(SimpleMaterialData&& data);
+        Material(const MaterialTemplate* tmp, SimpleMaterialData&& data = SimpleMaterialData());
 
-		DevicePtr device() const;
-		bool is_null() const;
+        bool is_null() const;
 
-		const MaterialTemplate* material_template() const;
+        const MaterialTemplate* material_template() const;
 
-		const SimpleMaterialData& data() const;
-		const DescriptorSetBase& descriptor_set() const;
+        const SimpleMaterialData& data() const;
+        const DescriptorSetBase& descriptor_set() const;
 
-	private:
-		const MaterialTemplate* _template = nullptr;
+    private:
+        const MaterialTemplate* _template = nullptr;
 
-		DescriptorSet _set;
+        DescriptorSet _set;
 
-		SimpleMaterialData _data;
+        SimpleMaterialData _data;
 };
 
-YAVE_DECLARE_ASSET_TRAITS(Material, SimpleMaterialData, AssetType::Material);
+YAVE_DECLARE_GRAPHIC_ASSET_TRAITS(Material, SimpleMaterialData, AssetType::Material);
 
 }
 
 
 #endif // YAVE_MATERIAL_MATERIAL_H
+

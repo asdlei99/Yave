@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@ SOFTWARE.
 #ifndef Y_UTILS_NAME_H
 #define Y_UTILS_NAME_H
 
+#include <y/defines.h>
+
 #include <string_view>
 
 namespace y {
@@ -29,12 +31,12 @@ namespace detail {
 // Trick from https://github.com/Neargye/nameof
 template<typename... T>
 constexpr std::string_view ct_type_name() {
-#if defined(__clang__)
-	return std::string_view{__PRETTY_FUNCTION__ + 49, sizeof(__PRETTY_FUNCTION__) - 52};
-#elif defined(__GNUC__)
-	return std::string_view{__PRETTY_FUNCTION__ + 64, sizeof(__PRETTY_FUNCTION__) - 116};
+#if defined(Y_CLANG)
+    return std::string_view{__PRETTY_FUNCTION__ + 49, sizeof(__PRETTY_FUNCTION__) - 52};
+#elif defined(Y_GCC)
+    return std::string_view{__PRETTY_FUNCTION__ + 64, sizeof(__PRETTY_FUNCTION__) - 116};
 #elif defined(Y_MSVC)
-	return std::string_view{__FUNCSIG__ + 98, sizeof(__FUNCSIG__) - 106};
+    return std::string_view{__FUNCSIG__ + 98, sizeof(__FUNCSIG__) - 106};
 #else
 static_assert(false, "ct_type_name is not supported");
 #endif
@@ -43,18 +45,17 @@ static_assert(false, "ct_type_name is not supported");
 
 template<typename T>
 constexpr std::string_view ct_type_name() {
-	return detail::ct_type_name<T>();
+    return detail::ct_type_name<T>();
 }
 
 static_assert(ct_type_name<int>() == "int");
 static_assert(ct_type_name<float>() == "float");
 
-#ifndef Y_MSVC
-Y_TODO(Make ct_type_name work for classes on MSVC)
-static_assert(ct_type_name<std::string_view>() == "std::basic_string_view<char, std::char_traits<char> >");
-#endif
+// This is compiler dependent =(
+//static_assert(ct_type_name<std::string_view>() == "std::basic_string_view<char,std::char_traits<char>>");
 
 }
 
 
 #endif // Y_UTILS_NAME_H
+

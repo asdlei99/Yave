@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ SOFTWARE.
 #ifndef YAVE_GRAPHICS_MEMORY_DEVICEMEMORYHEAPBASE_H
 #define YAVE_GRAPHICS_MEMORY_DEVICEMEMORYHEAPBASE_H
 
-#include <yave/device/DeviceLinked.h>
+#include <yave/graphics/graphics.h>
 
 #include <y/core/Result.h>
 
@@ -32,22 +32,22 @@ SOFTWARE.
 
 namespace yave {
 
-class DeviceMemoryHeapBase : NonMovable, public DeviceLinked {
-	public:
-		virtual ~DeviceMemoryHeapBase() {
-		}
+class DeviceMemoryHeapBase : NonMovable {
+    public:
+        virtual ~DeviceMemoryHeapBase() {
+        }
 
-		virtual core::Result<DeviceMemory> alloc(VkMemoryRequirements reqs) = 0;
-		virtual void free(const DeviceMemory& memory) = 0;
+        virtual core::Result<DeviceMemory> alloc(VkMemoryRequirements reqs) = 0;
+        virtual void free(const DeviceMemory& memory) = 0;
 
-		virtual void* map(const DeviceMemoryView& view) = 0;
-		virtual void unmap(const DeviceMemoryView& view) = 0;
+        virtual void* map(const DeviceMemoryView& view) = 0;
+        virtual void unmap(const DeviceMemoryView& view) = 0;
 
-	protected:
-		DeviceMemoryHeapBase(DevicePtr dptr) : DeviceLinked(dptr) {
-		}
+    protected:
+        DeviceMemoryHeapBase() = default;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_MEMORY_DEVICEMEMORYHEAPBASE_H
+

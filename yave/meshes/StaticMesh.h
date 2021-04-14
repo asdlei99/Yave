@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,42 +22,45 @@ SOFTWARE.
 #ifndef YAVE_MESHES_STATICMESH_H
 #define YAVE_MESHES_STATICMESH_H
 
-#include "MeshData.h"
+#include "AABB.h"
 
 #include <yave/graphics/buffers/buffers.h>
-#include <yave/graphics/buffers/TypedWrapper.h>
+#include <yave/graphics/device/extensions/RayTracing.h>
 
 #include <yave/assets/AssetTraits.h>
+
+Y_TODO(move into graphics?)
 
 namespace yave {
 
 class StaticMesh : NonCopyable {
 
-	public:
-		StaticMesh() = default;
+    public:
+        StaticMesh() = default;
 
-		StaticMesh(DevicePtr dptr, const MeshData& mesh_data);
+        StaticMesh(const MeshData& mesh_data);
 
-		DevicePtr device() const;
-		bool is_null() const;
+        bool is_null() const;
 
-		const TriangleBuffer<>& triangle_buffer() const;
-		const VertexBuffer<>& vertex_buffer() const;
-		const VkDrawIndexedIndirectCommand& indirect_data() const;
+        const TriangleBuffer<>& triangle_buffer() const;
+        const VertexBuffer<>& vertex_buffer() const;
+        const VkDrawIndexedIndirectCommand& indirect_data() const;
 
-		float radius() const;
-		const AABB& aabb() const;
+        float radius() const;
+        const AABB& aabb() const;
 
-	private:
-		TriangleBuffer<> _triangle_buffer;
-		VertexBuffer<> _vertex_buffer;
-		VkDrawIndexedIndirectCommand _indirect_data = {};
+    private:
+        TriangleBuffer<> _triangle_buffer;
+        VertexBuffer<> _vertex_buffer;
 
-		AABB _aabb;
+        VkDrawIndexedIndirectCommand _indirect_data = {};
+
+        AABB _aabb;
 };
 
-YAVE_DECLARE_ASSET_TRAITS(StaticMesh, MeshData, AssetType::Mesh);
+YAVE_DECLARE_GRAPHIC_ASSET_TRAITS(StaticMesh, MeshData, AssetType::Mesh);
 
 }
 
 #endif // YAVE_MESHES_STATICMESH_H
+

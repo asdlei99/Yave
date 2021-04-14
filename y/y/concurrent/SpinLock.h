@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,29 +31,29 @@ namespace concurrent {
 
 class SpinLock : NonCopyable {
 #ifndef Y_DEBUG
-	using Type = bool;
-	static constexpr Type Locked = true;
-	static constexpr Type Unlocked = false;
+    using Type = bool;
+    static constexpr Type Locked = true;
+    static constexpr Type Unlocked = false;
 #else
-	using Type = u32;
-	static constexpr Type Destroyed = 2;
-	static constexpr Type Locked = 1;
-	static constexpr Type Unlocked = 0;
+    using Type = u32;
+    static constexpr Type Destroyed = 2;
+    static constexpr Type Locked = 1;
+    static constexpr Type Unlocked = 0;
 #endif
 
-	public:
-		SpinLock();
-		~SpinLock();
+    public:
+        SpinLock();
+        ~SpinLock();
 
-		void lock();
-		void unlock();
-		bool try_lock();
+        void lock();
+        void unlock();
+        bool try_lock();
 
-		static void wait_once();
+        static void wait_once();
 
-	private:
-		//std::atomic_flag _spin;
-		std::atomic<Type> _spin;
+    private:
+        //std::atomic_flag _spin;
+        std::atomic<Type> _spin;
 };
 
 
@@ -61,3 +61,4 @@ class SpinLock : NonCopyable {
 }
 
 #endif // Y_CONCURRENT_SPINLOCK_H
+

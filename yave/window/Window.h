@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,7 @@ SOFTWARE.
 
 #include "EventHandler.h"
 
-#include <y/core/String.h>
-
+#include <string_view>
 #include <memory>
 
 
@@ -45,50 +44,72 @@ using LRESULT_ = long long int;
 #endif
 
 class Window : NonMovable {
-	public:
-		enum Flags {
-			NoFlags = 0,
-			Resizable = 0x01
-		};
+    public:
+        enum Flags {
+            NoFlags = 0,
+            Resizable = 0x01,
+            NoDecoration = 0x02,
+        };
 
 
-		Window(const math::Vec2ui& size, const core::String& name, Flags flags = NoFlags);
-		virtual ~Window();
+        Window(const math::Vec2ui& size, std::string_view title, Flags flags = Resizable);
+        virtual ~Window();
 
-		void close();
-		bool update();
+        void close();
+        bool update();
 
-		void show();
+        void show();
+
+        void focus();
+        bool has_focus() const;
+
+        bool is_minimized() const;
+
+        math::Vec2ui size() const;
+        math::Vec2i position() const;
+
+        void set_size(const math::Vec2ui& size);
+        void set_position(const math::Vec2i& pos);
+
+        math::Vec2ui window_size() const;
+        math::Vec2i window_position() const;
+
+        void set_window_size(const math::Vec2ui& size);
+        void set_window_position(const math::Vec2i& pos);
+
+        void set_title(std::string_view title);
+
+
+        void set_event_handler(EventHandler* handler) { _event_handler = handler; }
+        EventHandler* event_handler() const { return _event_handler; }
 
 #ifdef Y_OS_WIN
-		HINSTANCE_ instance() const { return _hinstance; }
-		HWND_ handle() const { return _hwnd; }
+        HINSTANCE_ instance() const { return _hinstance; }
+        HWND_ handle() const { return _hwnd; }
 #endif
 
-		const math::Vec2ui& size() const;
-		math::Vec2ui position() const;
+    protected:
+        virtual void resized() {}
 
-		void set_event_handler(std::unique_ptr<EventHandler> handler);
-		EventHandler* event_handler() const;
-
-	protected:
-		virtual void resized() {
-		}
-
-	private:
+    private:
 #ifdef Y_OS_WIN
-		friend void set_window_size(Window* win, const math::Vec2ui& size);
-		HINSTANCE_ _hinstance;
-		HWND_ _hwnd;
-		bool _run;
+        friend void notify_resized(Window* win);
+        friend void update_capture_state(Window* win, bool button_down, MouseButton button);
+
+        HINSTANCE_ _hinstance = nullptr;
+        HWND_ _hwnd = nullptr;
+        bool _run = true;
+        u32 _mouse_state = 0;
+
+        u32 _style = 0;
+        u32 _ex_style = 0;
 #endif
 
-		math::Vec2ui _size;
-		core::String _name;
 
-		mutable std::unique_ptr<EventHandler> _event_handler;
+        EventHandler* _event_handler = nullptr;
 };
 
 }
 
 #endif // YAVE_WINDOW_WINDOW_H
+

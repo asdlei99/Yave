@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,124 +22,49 @@ SOFTWARE.
 #ifndef YAVE_ECS_ENTITYIDPOOL_H
 #define YAVE_ECS_ENTITYIDPOOL_H
 
-#include <yave/utils/serde.h>
-
-#include "EntityId.h"
+#include "ecs.h"
 
 #include <y/core/Vector.h>
-#include <y/core/Result.h>
+#include <y/core/Range.h>
+
+#include <y/reflect/reflect.h>
+
+#include <y/utils/iter.h>
 
 namespace yave {
 namespace ecs {
 
 class EntityIdPool {
-	template<bool Const>
-	class Iterator {
-		public:
-			using value_type = std::conditional_t<Const, const EntityId, EntityId>;
-			using reference = value_type&;
-			using pointer = value_type*;
-			using difference_type = usize;
-			using iterator_category = std::forward_iterator_tag;
+    public:
+        EntityIdPool() = default;
+        EntityIdPool(EntityIdPool&&) = default;
+        EntityIdPool& operator=(EntityIdPool&&) = default;
 
-			reference operator*() const {
-				y_debug_assert(!at_end());
-				y_debug_assert(_it->_index != EntityId::invalid_index);
-				return *_it;
-			}
+        usize size() const;
+        bool contains(EntityId id) const;
 
-			pointer operator->() const {
-				y_debug_assert(!at_end());
-				y_debug_assert(_it->_index != EntityId::invalid_index);
-				return _it;
-			}
+        EntityId id_from_index(u32 index) const;
 
-			Iterator& operator++() {
-				advance();
-				return *this;
-			}
+        EntityId create();
+        void recycle(EntityId id);
 
-			Iterator operator++(int) {
-				const Iterator it(*this);
-				advance();
-				return it;
-			}
 
-			bool operator==(const Iterator& other) const {
-				return _it == other._it;
-			}
+        auto ids() const {
+            return core::Range(
+                FilterIterator(_ids.begin(), _ids.end(), [](EntityId id) { return id.is_valid(); }),
+                EndIterator()
+            );
+        }
 
-			bool operator!=(const Iterator& other) const {
-				return _it != other._it;
-			}
+        y_reflect(_ids, _free)
 
-			bool operator<(const Iterator& other) const {
-				return _it < other._it;
-			}
-
-			bool operator>(const Iterator& other) const {
-				return _it > other._it;
-			}
-
-			bool at_end() const {
-				return _it->_version == EntityId::invalid_index;
-			}
-
-		private:
-			friend class EntityIdPool;
-
-			Iterator(pointer it) : _it(it) {
-				skip_empty();
-			}
-
-			void advance() {
-				++_it;
-				skip_empty();
-			}
-
-			void skip_empty() {
-				while(!at_end() && _it->_index == EntityId::invalid_index) {
-					++_it;
-				}
-			}
-
-			pointer _it;
-	};
-
-	public:
-		using iterator = Iterator<false>;
-		using const_iterator = Iterator<true>;
-
-		using value_type = EntityId;
-
-		EntityIdPool();
-
-		core::Result<void> create_with_index(EntityIndex index);
-
-		bool contains(EntityId id) const;
-
-		EntityId id_from_index(EntityIndex index) const;
-
-		EntityId create();
-		void recycle(EntityId id);
-
-		iterator begin();
-		iterator end();
-		const_iterator begin() const;
-		const_iterator end() const;
-
-		usize size() const;
-
-		y_serde3(_ids, _size)
-
-	private:
-		core::Vector<EntityId> _ids;
-		core::Vector<EntityIndex> _free;
-
-		usize _size = 0;
+    private:
+        core::Vector<EntityId> _ids;
+        core::Vector<u32> _free;
 };
 
 }
 }
 
 #endif // YAVE_ECS_ENTITYIDPOOL_H
+

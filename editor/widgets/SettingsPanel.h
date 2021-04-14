@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,20 +22,25 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_SETTINGSPANEL_H
 #define EDITOR_WIDGETS_SETTINGSPANEL_H
 
-#include <editor/ui/Widget.h>
+#include <editor/Widget.h>
 
 namespace editor {
 
-class SettingsPanel : public Widget, public ContextLinked {
-	public:
-		SettingsPanel(ContextPtr cptr);
+class SettingsPanel : public Widget {
 
-	private:
-		void paint_ui(CmdBufferRecorder&, const FrameToken&) override;
+    editor_widget(SettingsPanel)
 
-		usize _category = 0;
+    public:
+        SettingsPanel();
+
+    protected:
+        void on_gui() override;
+
+    private:
+        usize _category = 0;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_SETTINGSPANEL_H
+

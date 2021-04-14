@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,7 @@ SOFTWARE.
 
 #include "SpirVData.h"
 
-#include <yave/graphics/vk/vk.h>
-#include <yave/device/DeviceLinked.h>
+#include <yave/graphics/graphics.h>
 
 #include <yave/utils/traits.h>
 
@@ -34,113 +33,119 @@ SOFTWARE.
 namespace yave {
 
 enum class ShaderType : u32 {
-	None = 0,
-	Fragment = VK_SHADER_STAGE_FRAGMENT_BIT,
-	Vertex = VK_SHADER_STAGE_VERTEX_BIT,
-	Geomery = VK_SHADER_STAGE_GEOMETRY_BIT,
-	Compute = VK_SHADER_STAGE_COMPUTE_BIT
+    None = 0,
+    Fragment = VK_SHADER_STAGE_FRAGMENT_BIT,
+    Vertex = VK_SHADER_STAGE_VERTEX_BIT,
+    Geomery = VK_SHADER_STAGE_GEOMETRY_BIT,
+    Compute = VK_SHADER_STAGE_COMPUTE_BIT
 };
 
 class SpecializationData : NonCopyable {
-		template<typename... Args>
-		static std::true_type is_tuple(const std::tuple<Args...>&);
+        template<typename... Args>
+        static std::true_type is_tuple(const std::tuple<Args...>&);
 
-		template<typename T>
-		static std::false_type is_tuple(const T&);
+        template<typename T>
+        static std::false_type is_tuple(const T&);
 
-	public:
-		SpecializationData() = default;
+    public:
+        SpecializationData() = default;
 
-		template<typename T>
-		SpecializationData(const T& data) : _data(&data), _size(sizeof(T)) {
-			static_assert(!decltype(is_tuple(data))::value, "std::tuple is not standard layout");
-		}
+        template<typename T>
+        SpecializationData(const T& data) : _data(&data), _size(sizeof(T)) {
+            static_assert(!decltype(is_tuple(data))::value, "std::tuple is not standard layout");
+        }
 
-		template<typename T>
-		SpecializationData(core::Span<T> arr) : _data(arr.data()), _size(arr.size(), sizeof(T)) {
-			static_assert(!decltype(is_tuple(*arr.data()))::value, "std::tuple is not standard layout");
-		}
+        template<typename T>
+        SpecializationData(core::Span<T> arr) : _data(arr.data()), _size(arr.size(), sizeof(T)) {
+            static_assert(!decltype(is_tuple(*arr.data()))::value, "std::tuple is not standard layout");
+        }
 
-		const void* data() const {
-			return _data;
-		}
+        const void* data() const {
+            return _data;
+        }
 
-		usize size() const {
-			return _size;
-		}
+        usize size() const {
+            return _size;
+        }
 
-	private:
-		const void* _data = nullptr;
-		usize _size = 0;
+    private:
+        const void* _data = nullptr;
+        usize _size = 0;
 };
 
-class ShaderModuleBase : NonMovable, public DeviceLinked {
+class ShaderModuleBase : NonMovable {
 
-	public:
-		enum class AttribType {
-			Uint = 0,
-			Int = 1,
-			Float = 2,
-			Char = 3
-		};
+    public:
+        enum class AttribType {
+            Uint = 0,
+            Int = 1,
+            Float = 2,
+            Char = 3
+        };
 
-		struct Attribute {
-			u32 location;
-			u32 columns;
-			u32 vec_size;
-			u32 component_size;
-			AttribType type;
-		};
+        struct Attribute {
+            u32 location;
+            u32 columns;
+            u32 vec_size;
+            u32 component_size;
+            AttribType type;
+        };
 
-		~ShaderModuleBase();
+        ~ShaderModuleBase();
 
-		const auto& bindings() const {
-			return _bindings;
-		}
+        const auto& bindings() const {
+            return _bindings;
+        }
 
-		const auto& attributes() const {
-			return _attribs;
-		}
+        const auto& attributes() const {
+            return _attribs;
+        }
 
-		ShaderType type() const {
-			return _type;
-		}
+        ShaderType type() const {
+            return _type;
+        }
 
-		const math::Vec3ui& local_size() const {
-			return _local_size;
-		}
+        const math::Vec3ui& local_size() const {
+            return _local_size;
+        }
 
-		VkShaderModule vk_shader_module() const {
-			return _module;
-		}
+        VkShaderModule vk_shader_module() const {
+            return _module;
+        }
 
-		core::Span<VkPushConstantRange> vk_push_constants() const {
-			return _push_constants;
-		}
+        core::Span<VkPushConstantRange> vk_push_constants() const {
+            return _push_constants;
+        }
 
-		usize specialization_data_size() const {
-			return _spec_constants.is_empty() ? 0 : (_spec_constants.last().offset + _spec_constants.last().size);
-		}
+        core::Span<u32> stage_output() const {
+            return _stage_output;
+        }
 
-		const auto& specialization_entries() const {
-			return _spec_constants;
-		}
+        usize specialization_data_size() const {
+            return _spec_constants.is_empty() ? 0 : (_spec_constants.last().offset + _spec_constants.last().size);
+        }
 
-		static ShaderType shader_type(const SpirVData& data);
+        const auto& specialization_entries() const {
+            return _spec_constants;
+        }
 
-	protected:
-		ShaderModuleBase() = default;
+        static ShaderType shader_type(const SpirVData& data);
 
-		ShaderModuleBase(DevicePtr dptr, const SpirVData& data);
+    protected:
+        ShaderModuleBase() = default;
 
-	private:
-		VkShaderModule _module;
-		ShaderType _type = ShaderType::None;
-		core::ExternalHashMap<u32, core::Vector<VkDescriptorSetLayoutBinding>> _bindings;
-		core::Vector<VkSpecializationMapEntry> _spec_constants;
-		core::Vector<VkPushConstantRange> _push_constants;
-		core::Vector<Attribute> _attribs;
-		math::Vec3ui _local_size;
+        ShaderModuleBase(const SpirVData& data);
+
+    private:
+        VkHandle<VkShaderModule> _module;
+        ShaderType _type = ShaderType::None;
+        core::ExternalHashMap<u32, core::Vector<VkDescriptorSetLayoutBinding>> _bindings;
+        core::Vector<VkSpecializationMapEntry> _spec_constants;
+        core::Vector<VkPushConstantRange> _push_constants;
+        core::Vector<Attribute> _attribs;
+        core::Vector<u32> _stage_output;
+        math::Vec3ui _local_size;
+
 
 };
 
@@ -149,3 +154,4 @@ static_assert(is_safe_base<ShaderModuleBase>::value);
 }
 
 #endif // YAVE_GRAPHICS_SHADERS_SHADERMODULEBASE_H
+

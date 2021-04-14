@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +22,43 @@ SOFTWARE.
 #ifndef YAVE_COMPONENTS_TRANSFORMABLECOMPONENT_H
 #define YAVE_COMPONENTS_TRANSFORMABLECOMPONENT_H
 
-#include <yave/yave.h>
+#include <yave/scene/OctreeData.h>
+#include <yave/meshes/AABB.h>
+
+#include <y/reflect/reflect.h>
 
 namespace yave {
 
-class TransformableComponent final : public math::Transform<> {
-	public:
-		using Transform::Transform;
+class TransformableComponent final {
+    public:
+        void set_transform(const math::Transform<>& tr);
+        const math::Transform<>& transform() const;
 
-		math::Transform<>& transform() {
-			return *this;
-		}
+        const math::Vec3& forward() const;
+        const math::Vec3& right() const;
+        const math::Vec3& up() const;
 
-		const math::Transform<>& transform() const {
-			return *this;
-		}
+        const math::Vec3& position() const;
+        math::Vec3& position();
 
+        math::Vec3 to_global(const math::Vec3& pos) const;
+        AABB to_global(const AABB& aabb) const;
+
+        y_reflect(_transform)
+
+    private:
+        friend class Octree;
+        friend class OctreeSystem;
+
+        void update_node();
+
+        math::Transform<> _transform;
+
+        OctreeEntityId _node_id;
+        OctreeNode* _node = nullptr;
 };
 
 }
 
 #endif // YAVE_COMPONENTS_TRANSFORMABLECOMPONENT_H
+

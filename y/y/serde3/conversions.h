@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Gr�goire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,44 +25,55 @@ SOFTWARE.
 #include "headers.h"
 #include "result.h"
 
+#include <y/io2/io.h>
+
 Y_TODO(Remove this (is this a GCC bug?))
-#ifdef __GNUC__
+#ifdef Y_GCC
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-conversion"
 #endif
 
-#define y_serde3_try_convert(prim)														\
-	do {																				\
-		if constexpr(std::is_convertible_v<prim, T>) {									\
-			static constexpr auto type_hash = detail::header_type_hash<prim>();			\
-			if(type_hash == type.type_hash) {											\
-				t = static_cast<T>(*static_cast<const prim*>(data));					\
-				return core::Ok(Success::Full);											\
-			}																			\
-		}																				\
-	} while(false)
+#define y_serde3_try_convert(Type)                                                      \
+    do {                                                                                \
+        if constexpr(std::is_convertible_v<Type, T>) {                                  \
+            static constexpr auto type_hash = detail::header_type_hash<Type>();         \
+            if(type_hash == type.type_hash) {                                           \
+                Type tmp = {};                                                          \
+                y_try(read_one(tmp));                                                   \
+                t = static_cast<T>(tmp);                                                \
+                return core::Ok(Success::Full);                                         \
+            }                                                                           \
+        }                                                                               \
+    } while(false)
 
 namespace y {
 namespace serde3 {
 
 template<typename T>
-Result try_convert(T& t, detail::TypeHeader type, const void* data) {
-	unused(t, type, data);
+Result try_convert(T& t, detail::TypeHeader type, io2::Reader& reader) {
+    auto read_one = [&](auto& t) -> Result {
+        if(!reader.read_one(t)) {
+            return core::Err(Error(ErrorType::IOError));
+        }
+        return core::Ok(Success::Full);
+    };
 
-	y_serde3_try_convert(u8);
-	y_serde3_try_convert(u16);
-	y_serde3_try_convert(u32);
-	y_serde3_try_convert(u64);
+    unused(t, type, reader, read_one);
 
-	y_serde3_try_convert(i8);
-	y_serde3_try_convert(i16);
-	y_serde3_try_convert(i32);
-	y_serde3_try_convert(i64);
+    y_serde3_try_convert(u8);
+    y_serde3_try_convert(u16);
+    y_serde3_try_convert(u32);
+    y_serde3_try_convert(u64);
 
-	y_serde3_try_convert(float);
-	y_serde3_try_convert(double);
+    y_serde3_try_convert(i8);
+    y_serde3_try_convert(i16);
+    y_serde3_try_convert(i32);
+    y_serde3_try_convert(i64);
 
-	return core::Ok(Success::Partial);
+    y_serde3_try_convert(float);
+    y_serde3_try_convert(double);
+
+    return core::Ok(Success::Partial);
 }
 
 }
@@ -70,8 +81,9 @@ Result try_convert(T& t, detail::TypeHeader type, const void* data) {
 
 #undef y_serde3_try_convert
 
-#ifdef __GNUC__
+#ifdef Y_GCC
 #pragma GCC diagnostic pop
 #endif
 
 #endif // Y_SERDE3_CONVERSIONS_H
+

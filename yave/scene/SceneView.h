@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,31 +24,36 @@ SOFTWARE.
 
 #include <yave/camera/Camera.h>
 
+#include <yave/ecs/ecs.h>
+
 namespace yave {
 
-namespace ecs {
-class EntityWorld;
-}
-
 class SceneView {
-	public:
-		SceneView() = default;
-		SceneView(const ecs::EntityWorld* wor, Camera cam = Camera());
+    public:
+        SceneView() = default;
+        SceneView(const ecs::EntityWorld* wor, Camera cam = Camera());
 
-		const ecs::EntityWorld& world() const;
+#ifdef Y_DEBUG
+        ~SceneView() {
+            _world = nullptr;
+        }
+#endif
 
-		bool has_scene() const;
-		bool has_world() const;
+        const ecs::EntityWorld& world() const;
+
+        bool has_scene() const;
+        bool has_world() const;
 
 
-		const Camera& camera() const;
-		Camera& camera();
+        const Camera& camera() const;
+        Camera& camera();
 
-	private:
-		const ecs::EntityWorld* _world = nullptr;
-		Camera _camera;
+    private:
+        const ecs::EntityWorld* _world = nullptr;
+        Camera _camera;
 };
 
 }
 
 #endif // YAVE_SCENE_SCENEVIEW_H
+

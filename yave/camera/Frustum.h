@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,27 @@ SOFTWARE.
 #define YAVE_CAMERA_FRUSTUM_H
 
 #include <yave/yave.h>
+#include <array>
 
 namespace yave {
 
-using Plane = math::Vec4;
+class Frustum {
 
-class Frustum : public std::array<Plane, 6> {
-	using Base = std::array<Plane, 6>;
+    public:
+        Frustum() = default;
 
-	public:
-		Frustum() = default;
+        Frustum(const std::array<math::Vec3, 4>& normals, const math::Vec3& pos, const math::Vec3& forward);
 
-		Frustum(const Base& fru) : Base(fru) {
-		}
+        bool is_inside(const math::Vec3& pos, float radius) const;
 
-		bool is_inside(const math::Vec3& pos, float radius) const;
-
-	private:
+    private:
+        std::array<math::Vec3, 4> _normals;
+        math::Vec3 _pos;
+        math::Vec3 _forward;
 
 };
 
 }
 
 #endif // YAVE_CAMERA_FRUSTUM_H
+

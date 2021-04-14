@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,76 +29,79 @@ SOFTWARE.
 namespace yave {
 
 template<ImageUsage Usage, ImageType Type = ImageType::TwoD>
-class ImageView : public DeviceLinked {
+class ImageView {
 
-	protected:
-		static constexpr bool is_compatible(ImageUsage u) {
-			return (uenum(Usage) & uenum(u)) == uenum(Usage);
-		}
+    protected:
+        static constexpr bool is_compatible(ImageUsage u) {
+            return (uenum(Usage) & uenum(u)) == uenum(Usage);
+        }
 
-	public:
-		using size_type = typename Image<Usage, Type>::size_type;
+    public:
+        using size_type = typename Image<Usage, Type>::size_type;
 
-		ImageView() = default;
+        ImageView() = default;
 
-		template<ImageUsage U, typename = std::enable_if_t<is_compatible(U)>>
-		ImageView(const Image<U, Type>& img) : ImageView(img.device(), img.size(), img.usage(), img.format(), img.vk_view(), img.vk_image()) {
-			static_assert(is_compatible(U));
-		}
+        template<ImageUsage U, typename = std::enable_if_t<is_compatible(U)>>
+        ImageView(const Image<U, Type>& img) : ImageView(img.size(), img.usage(), img.format(), img.vk_view(), img.vk_image()) {
+            static_assert(is_compatible(U));
+        }
 
-		template<ImageUsage U, typename = std::enable_if_t<is_compatible(U)>>
-		ImageView(const ImageView<U, Type>& img) : ImageView(img.device(), img.size(), img.usage(), img.format(), img.vk_view(), img.vk_image()) {
-			static_assert(is_compatible(U));
-		}
+        template<ImageUsage U, typename = std::enable_if_t<is_compatible(U)>>
+        ImageView(const ImageView<U, Type>& img) : ImageView(img.size(), img.usage(), img.format(), img.vk_view(), img.vk_image()) {
+            static_assert(is_compatible(U));
+        }
 
-		VkImageView vk_view() const {
-			return _view;
-		}
+        bool is_null() const {
+            return !_view;
+        }
 
-		VkImage vk_image() const {
-			return _image;
-		}
+        VkImageView vk_view() const {
+            return _view;
+        }
 
-		ImageUsage usage() const {
-			return _usage;
-		}
+        VkImage vk_image() const {
+            return _image;
+        }
 
-		ImageFormat format() const {
-			return _format;
-		}
+        ImageUsage usage() const {
+            return _usage;
+        }
 
-		const size_type& size() const {
-			return _size;
-		}
+        ImageFormat format() const {
+            return _format;
+        }
 
-		bool operator==(const ImageView& other) const {
-			return _view == other._view;
-		}
+        const size_type& size() const {
+            return _size;
+        }
 
-		bool operator!=(const ImageView& other) const {
-			return !operator==(other);
-		}
+        bool operator==(const ImageView& other) const {
+            return _view == other._view;
+        }
 
-	protected:
-		ImageView(DevicePtr dptr, const size_type& size, ImageUsage usage, ImageFormat format, VkImageView view, VkImage image) :
-				DeviceLinked(dptr),
-				_size(size),
-				_usage(usage),
-				_format(format),
-				_view(view),
-				_image(image) {
-		}
+        bool operator!=(const ImageView& other) const {
+            return !operator==(other);
+        }
+
+    protected:
+        ImageView(const size_type& size, ImageUsage usage, ImageFormat format, VkImageView view, VkImage image) :
+                _size(size),
+                _usage(usage),
+                _format(format),
+                _view(view),
+                _image(image) {
+        }
 
 
-	private:
-		template<ImageUsage U, ImageType T>
-		friend class ImageView;
+    private:
+        template<ImageUsage U, ImageType T>
+        friend class ImageView;
 
-		size_type _size;
-		ImageUsage _usage = ImageUsage::None;
-		ImageFormat _format;
-		VkImageView _view = {};
-		VkImage _image = {};
+        size_type _size;
+        ImageUsage _usage = ImageUsage::None;
+        ImageFormat _format;
+        VkImageView _view = {};
+        VkImage _image = {};
 };
 
 using TextureView = ImageView<ImageUsage::TextureBit>;
@@ -112,8 +115,7 @@ using CubemapView = ImageView<ImageUsage::TextureBit, ImageType::Cube>;
 using CubemapStorageView = ImageView<ImageUsage::StorageBit, ImageType::Cube>;
 
 
-static_assert(sizeof(TextureView) == 5 * 8);
-
 }
 
 #endif // YAVE_GRAPHICS_IMAGES_IMAGEVIEW_H
+

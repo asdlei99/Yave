@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +22,27 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_FILERENAMER_H
 #define EDITOR_WIDGETS_FILERENAMER_H
 
-#include <editor/ui/Widget.h>
+#include <editor/Widget.h>
 
 namespace editor {
 
 class FileRenamer final : public Widget {
-	public:
-		FileRenamer(const FileSystemModel* fs, core::String filename);
+    public:
+        FileRenamer(const FileSystemModel* fs, core::String filename);
 
-	private:
-		void paint_ui(CmdBufferRecorder&, const FrameToken&) override;
+    protected:
+        void on_gui() override;
 
-	private:
-		const FileSystemModel* _filesystem = nullptr;
+    private:
+        const FileSystemModel* _filesystem = nullptr;
 
-		core::String _filename;
-		core::String _name;
-		std::array<char, 1024> _new_name;
+        core::String _filename;
+        core::String _name;
+        std::array<char, 1024> _new_name;
 
 };
 
 }
 
 #endif // EDITOR_WIDGETS_FILERENAMER_H
+

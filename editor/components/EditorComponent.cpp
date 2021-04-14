@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,28 @@ SOFTWARE.
 
 namespace editor {
 
-EditorComponent::EditorComponent(std::string_view name) : _name(name) {
+EditorComponent::EditorComponent(core::String name) : _name(std::move(name)) {
 }
 
 const core::String& EditorComponent::name() const {
-	return _name;
+    return _name;
 }
 
 void EditorComponent::set_name(core::String name) {
-	_name = std::move(name);
+    _name = std::move(name);
 }
 
 math::Vec3& EditorComponent::euler() {
-	return _euler;
+    return _euler;
+}
+
+void EditorComponent::set_hidden_in_editor(bool hide) {
+    _hide_in_editor = hide;
+}
+
+bool EditorComponent::is_hidden_in_editor() const {
+    return _hide_in_editor;
 }
 
 }
+

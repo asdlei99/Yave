@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +22,32 @@ SOFTWARE.
 #ifndef EDITOR_MATERIALEDITOR_H
 #define EDITOR_MATERIALEDITOR_H
 
-#include <editor/ui/Widget.h>
+#include "Preview.h"
 
-#include "MaterialPreview.h"
+#include <yave/material/Material.h>
 
 namespace editor {
 
-class MaterialEditor final : public Widget, public ContextLinked {
+class MaterialEditor final : public Widget {
 
+    editor_widget(MaterialEditor)
 
-	public:
-		MaterialEditor(ContextPtr cptr);
+    public:
+        MaterialEditor();
 
-		void refresh() override;
+        void set_material(const AssetPtr<Material>& mat);
 
-		void set_material(const AssetPtr<Material>& mat);
+    protected:
+        void on_gui() override;
 
-	private:
-		void paint_ui(CmdBufferRecorder& recorder, const FrameToken& token) override;
+    private:
+        AssetPtr<Material> _material;
 
-		AssetPtr<Material> _material;
+        Preview _preview;
 
-		MaterialPreview _preview;
 };
 
 }
 
 #endif // EDITOR_MATERIALEDITOR_H
+

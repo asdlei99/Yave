@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,6 @@ SOFTWARE.
 #ifndef YAVE_MESHES_SKINNEDMESH_H
 #define YAVE_MESHES_SKINNEDMESH_H
 
-#include "MeshData.h"
 #include "Skeleton.h"
 
 #include <yave/graphics/buffers/buffers.h>
@@ -33,31 +32,32 @@ namespace yave {
 
 class SkinnedMesh : NonCopyable {
 
-	public:
-		SkinnedMesh() = default;
+    public:
+        SkinnedMesh() = default;
 
-		SkinnedMesh(DevicePtr dptr, const MeshData& mesh_data);
+        SkinnedMesh(const MeshData& mesh_data);
 
-		const TriangleBuffer<>& triangle_buffer() const;
-		const SkinnedVertexBuffer<>& vertex_buffer() const;
+        const TriangleBuffer<>& triangle_buffer() const;
+        const SkinnedVertexBuffer<>& vertex_buffer() const;
 
-		const VkDrawIndexedIndirectCommand& indirect_data() const;
-		const Skeleton& skeleton() const;
+        const VkDrawIndexedIndirectCommand& indirect_data() const;
+        const Skeleton& skeleton() const;
 
-		float radius() const;
+        float radius() const;
 
-	private:
-		TriangleBuffer<> _triangle_buffer;
-		SkinnedVertexBuffer<> _vertex_buffer;
-		VkDrawIndexedIndirectCommand _indirect_data = {};
+    private:
+        TriangleBuffer<> _triangle_buffer;
+        SkinnedVertexBuffer<> _vertex_buffer;
+        VkDrawIndexedIndirectCommand _indirect_data = {};
 
-		Skeleton _skeleton;
+        Skeleton _skeleton;
 
-		float _radius;
+        float _radius;
 };
 
-YAVE_DECLARE_ASSET_TRAITS(SkinnedMesh, MeshData, AssetType::Mesh);
+YAVE_DECLARE_GRAPHIC_ASSET_TRAITS(SkinnedMesh, MeshData, AssetType::Mesh);
 
 }
 
 #endif // YAVE_MESHES_SKINNEDMESH_H
+

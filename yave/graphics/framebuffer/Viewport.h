@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,15 @@ SOFTWARE.
 namespace yave {
 
 struct Viewport {
-	math::Vec2 extent;
-	math::Vec2 offset;
-	math::Vec2 depth;
+    math::Vec2 extent;
+    math::Vec2 offset;
+    math::Vec2 depth;
 
-	Viewport(const math::Vec2& size = math::Vec2(), const math::Vec2& off = math::Vec2()) : extent(size), offset(off), depth(0.0f, 1.0f) {
-	}
+    Viewport(const math::Vec2& size = math::Vec2(), const math::Vec2& off = math::Vec2()) : extent(size), offset(off), depth(0.0f, 1.0f) {
+    }
 };
 
 }
 
 #endif // YAVE_GRAPHICS_FRAMEBUFFER_VIEWPORT_H
+

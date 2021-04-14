@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,54 +22,95 @@ SOFTWARE.
 
 #include "Sampler.h"
 
-#include <yave/device/Device.h>
+#include <yave/graphics/graphics.h>
 
 namespace yave {
 
-static VkSamplerAddressMode vk_address_mode(Sampler::Type type) {
-	switch(type) {
-		case Sampler::Repeat:
-			return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+static VkSamplerAddressMode vk_address_mode(SamplerType type) {
+    switch(type) {
+        case SamplerType::LinearRepeat:
+        case SamplerType::PointRepeat:
+            return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
-		case Sampler::Clamp:
-			return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        case SamplerType::Shadow:
+        case SamplerType::LinearClamp:
+        case SamplerType::PointClamp:
+            return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
-		default:
-			y_fatal("Unknown sampler type");
-	}
+        default:
+            y_fatal("Unknown sampler type");
+    }
 }
 
-static VkSampler create_sampler(DevicePtr dptr, Sampler::Type type) {
+static VkFilter vk_filter(SamplerType type) {
+    switch(type) {
+        case SamplerType::PointRepeat:
+        case SamplerType::PointClamp:
+            return VK_FILTER_NEAREST;
 
-	VkSamplerCreateInfo create_info = vk_struct();
-	{
-		const VkSamplerAddressMode address_mode = vk_address_mode(type);
+        case SamplerType::Shadow:
+        case SamplerType::LinearRepeat:
+        case SamplerType::LinearClamp:
+            return VK_FILTER_LINEAR;
 
-		create_info.addressModeU = address_mode;
-		create_info.addressModeV = address_mode;
-		create_info.addressModeW = address_mode;
-		create_info.magFilter = VK_FILTER_LINEAR;
-		create_info.minFilter = VK_FILTER_LINEAR;
-		create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-		create_info.maxLod = 1000.0f;
-		create_info.maxAnisotropy = 1.0f;
-	}
-
-	VkSampler sampler = {};
-	vk_check(vkCreateSampler(dptr->vk_device(), &create_info, dptr->vk_allocation_callbacks(), &sampler));
-	return sampler;
+        default:
+            y_fatal("Unknown sampler type");
+    }
 }
 
-Sampler::Sampler(DevicePtr dptr, Type type) : DeviceLinked(dptr), _sampler(create_sampler(dptr, type)) {
+static VkSamplerMipmapMode vk_mip_filter(SamplerType type) {
+    switch(type) {
+        case SamplerType::PointRepeat:
+        case SamplerType::PointClamp:
+            return VK_SAMPLER_MIPMAP_MODE_NEAREST;
+
+        case SamplerType::Shadow:
+        case SamplerType::LinearRepeat:
+        case SamplerType::LinearClamp:
+            return VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+        default:
+            y_fatal("Unknown sampler type");
+    }
+}
+
+
+static VkSampler create_sampler(SamplerType type) {
+
+    VkSamplerCreateInfo create_info = vk_struct();
+    {
+        const VkSamplerAddressMode address_mode = vk_address_mode(type);
+        const VkFilter filter = vk_filter(type);
+        const VkSamplerMipmapMode mip_filter = vk_mip_filter(type);
+
+        create_info.addressModeU = address_mode;
+        create_info.addressModeV = address_mode;
+        create_info.addressModeW = address_mode;
+        create_info.magFilter = filter;
+        create_info.minFilter = filter;
+        create_info.mipmapMode = mip_filter;
+        create_info.maxLod = 1000.0f;
+        create_info.maxAnisotropy = 1.0f;
+        create_info.compareEnable = type == SamplerType::Shadow;
+        create_info.compareOp = VK_COMPARE_OP_GREATER;
+    }
+
+    VkSampler sampler = {};
+    vk_check(vkCreateSampler(vk_device(), &create_info, vk_allocation_callbacks(), &sampler));
+    return sampler;
+}
+
+Sampler::Sampler(SamplerType type) : _sampler(create_sampler(type)) {
 }
 
 Sampler::~Sampler() {
-	destroy(_sampler);
+    device_destroy(_sampler);
 }
 
 VkSampler Sampler::vk_sampler() const {
-	return _sampler;
+    return _sampler;
 }
 
 
 }
+

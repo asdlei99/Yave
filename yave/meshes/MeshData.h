@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,10 @@ SOFTWARE.
 #ifndef YAVE_MESHES_MESHDATA_H
 #define YAVE_MESHES_MESHDATA_H
 
-#include <yave/utils/serde.h>
-
 #include "Skeleton.h"
 #include "AABB.h"
+
+#include <y/reflect/reflect.h>
 
 #include <memory>
 
@@ -33,40 +33,41 @@ namespace yave {
 
 class MeshData {
 
-	public:
-		MeshData() = default;
-		MeshData(core::Vector<Vertex>&& vertices, core::Vector<IndexedTriangle>&& triangles, core::Vector<SkinWeights>&& skin = {}, core::Vector<Bone>&& bones = {});
+    public:
+        MeshData() = default;
+        MeshData(core::Vector<Vertex> vertices, core::Vector<IndexedTriangle> triangles, core::Vector<SkinWeights> skin = {}, core::Vector<Bone> bones = {});
 
-		float radius() const;
-		const AABB& aabb() const;
+        float radius() const;
+        const AABB& aabb() const;
 
-		core::Span<Vertex> vertices() const;
-		core::Span<IndexedTriangle> triangles() const;
+        core::Span<Vertex> vertices() const;
+        core::Span<IndexedTriangle> triangles() const;
 
-		core::Span<Bone> bones() const;
-		core::Span<SkinWeights> skin() const;
-		core::Vector<SkinnedVertex> skinned_vertices() const;
+        core::Span<Bone> bones() const;
+        core::Span<SkinWeights> skin() const;
+        core::Vector<SkinnedVertex> skinned_vertices() const;
 
-		bool has_skeleton() const;
+        bool has_skeleton() const;
 
-		y_serde3(_aabb, _vertices, _triangles, _skeleton)
+        y_reflect(_aabb, _vertices, _triangles, _skeleton)
 
-	private:
-		struct SkeletonData {
-			core::Vector<SkinWeights> skin;
-			core::Vector<Bone> bones;
+    private:
+        struct SkeletonData {
+            core::Vector<SkinWeights> skin;
+            core::Vector<Bone> bones;
 
-			y_serde3(skin, bones)
-		};
+            y_reflect(skin, bones)
+        };
 
-		AABB _aabb;
+        AABB _aabb;
 
-		core::Vector<Vertex> _vertices;
-		core::Vector<IndexedTriangle> _triangles;
+        core::Vector<Vertex> _vertices;
+        core::Vector<IndexedTriangle> _triangles;
 
-		std::unique_ptr<SkeletonData> _skeleton;
+        std::unique_ptr<SkeletonData> _skeleton;
 };
 
 }
 
 #endif // YAVE_MESHES_MESHDATA_H
+

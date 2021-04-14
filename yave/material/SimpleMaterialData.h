@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,56 +22,63 @@ SOFTWARE.
 #ifndef YAVE_MATERIAL_SIMPLEMATERIALDATA_H
 #define YAVE_MATERIAL_SIMPLEMATERIALDATA_H
 
-#include <yave/graphics/descriptors/DescriptorSet.h>
-
 #include <yave/assets/AssetPtr.h>
-#include <yave/assets/AssetLoader.h>
+#include <yave/graphics/images/Image.h>
 
 namespace yave {
 
 class SimpleMaterialData {
 
-	public:
-		enum Textures {
-			Diffuse,
-			Normal,
-			Roughness,
-			Metallic,
-			Max
-		};
+    public:
+        enum Textures {
+            Diffuse,
+            Normal,
+            Roughness,
+            Metallic,
+            Emissive,
+            Max
+        };
 
-		struct Contants {
-			float roughness_mul = 1.0f;
-			float metallic_mul = 0.0f;
-		};
+        struct Contants {
+            math::Vec3 emissive_mul;
+            float roughness_mul = 1.0f;
+            float metallic_mul = 0.0f;
+        };
 
-		Y_TODO(creating materials requires loading textures)
+        Y_TODO(creating materials requires loading textures)
 
-		static constexpr usize texture_count = usize(Textures::Max);
+        static constexpr usize texture_count = usize(Textures::Max);
 
-		SimpleMaterialData() = default;
-		SimpleMaterialData(std::array<AssetPtr<Texture>, texture_count>&& textures);
+        SimpleMaterialData() = default;
+        SimpleMaterialData(std::array<AssetPtr<Texture>, texture_count>&& textures);
 
-		SimpleMaterialData& set_texture(Textures type, AssetPtr<Texture> tex);
-		SimpleMaterialData& set_texture_reset_constants(Textures type, AssetPtr<Texture> tex);
+        SimpleMaterialData& set_texture(Textures type, AssetPtr<Texture> tex);
+        SimpleMaterialData& set_texture_reset_constants(Textures type, AssetPtr<Texture> tex);
 
-		bool is_empty() const;
+        bool is_empty() const;
 
-		const AssetPtr<Texture>& operator[](Textures tex) const;
-		const std::array<AssetPtr<Texture>, texture_count>& textures() const;
+        const AssetPtr<Texture>& operator[](Textures tex) const;
+        const std::array<AssetPtr<Texture>, texture_count>& textures() const;
 
-		const Contants& constants() const { return _constants; }
-		Contants& constants() { return _constants; }
+        const Contants& constants() const;
+        Contants& constants();
 
-		y_serde3(_textures, _constants)
+        bool alpha_tested() const;
+        bool& alpha_tested();
 
-	private:
-		std::array<AssetId, texture_count> texture_ids() const;
+        bool has_emissive() const;
 
-		std::array<AssetPtr<Texture>, texture_count> _textures;
-		Contants _constants;
+        y_reflect(_textures, _constants, _alpha_tested)
+
+    private:
+        std::array<AssetId, texture_count> texture_ids() const;
+
+        std::array<AssetPtr<Texture>, texture_count> _textures;
+        Contants _constants;
+        bool _alpha_tested = false;
 };
 
 }
 
 #endif // YAVE_MATERIAL_BASICMATERIALDATA_H
+

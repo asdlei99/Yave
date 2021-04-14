@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,32 @@ SOFTWARE.
 #ifndef YAVE_MATERIAL_GRAPHICPIPELINE_H
 #define YAVE_MATERIAL_GRAPHICPIPELINE_H
 
-#include <yave/graphics/vk/vk.h>
-
-#include <yave/device/DeviceLinked.h>
+#include <yave/graphics/graphics.h>
 
 namespace yave {
 
 class MaterialTemplate;
 
-class GraphicPipeline : NonCopyable, public DeviceLinked {
+class GraphicPipeline {
 
-	public:
-		GraphicPipeline() = default;
-		GraphicPipeline(const MaterialTemplate* mat, VkPipeline pipeline, VkPipelineLayout layout);
+    public:
+        GraphicPipeline() = default;
+        GraphicPipeline(VkPipeline pipeline, VkPipelineLayout layout);
 
-		~GraphicPipeline();
+        ~GraphicPipeline();
 
-		GraphicPipeline(GraphicPipeline&& other);
-		GraphicPipeline& operator=(GraphicPipeline&& other);
+        GraphicPipeline(GraphicPipeline&&) = default;
+        GraphicPipeline& operator=(GraphicPipeline&&) = default;
 
-		VkPipeline vk_pipeline() const;
-		VkPipelineLayout vk_pipeline_layout() const;
+        VkPipeline vk_pipeline() const;
+        VkPipelineLayout vk_pipeline_layout() const;
 
-	private:
-		void swap(GraphicPipeline& other);
-
-		VkPipeline _pipeline = {};
-		VkPipelineLayout _layout = {};
+    private:
+        VkHandle<VkPipeline> _pipeline;
+        VkHandle<VkPipelineLayout> _layout;
 };
 
 }
 
 #endif // YAVE_MATERIAL_GRAPHICPIPELINE_H
+

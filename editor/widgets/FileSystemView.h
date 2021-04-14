@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Gr�goire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,75 +22,79 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_FILESYSTEMVIEW_H
 #define EDITOR_WIDGETS_FILESYSTEMVIEW_H
 
-#include <editor/ui/Widget.h>
-#include <yave/utils/FileSystemModel.h>
+#include <editor/Widget.h>
 
 #include <y/core/Chrono.h>
+#include <y/core/Vector.h>
+#include <y/core/Result.h>
 
 namespace editor {
 
 class FileSystemView : public Widget {
-	public:
-		void refresh() override;
+    public:
+        void refresh() override;
 
-		const FileSystemModel* filesystem() const;
+        const FileSystemModel* filesystem() const;
 
-		void set_path(const core::String& path);
-		const core::String& path() const;
+        void set_path(const core::String& path);
+        const core::String& path() const;
 
-	protected:
-		enum class EntryType {
-			Directory,
-			File
-		};
+    protected:
+        enum class EntryType {
+            Directory,
+            File
+        };
 
-		struct Entry {
-			core::String name;
-			EntryType type;
-			core::String icon;
+        struct Entry {
+            core::String name;
+            EntryType type;
+            core::String icon;
 
-			bool operator<(const Entry& other) const {
-				return std::tie(type, name) < std::tie(other.type, other.name);
-			}
-		};
+            bool operator<(const Entry& other) const {
+                return std::tie(type, name) < std::tie(other.type, other.name);
+            }
+        };
 
-		FileSystemView(const FileSystemModel* fs = nullptr, std::string_view name = "File browser");
-		void set_filesystem(const FileSystemModel* model);
+        FileSystemView(const FileSystemModel* fs = nullptr, std::string_view name = "File browser");
+        void set_filesystem(const FileSystemModel* model);
 
-		usize hoverred_index() const;
-		const Entry* entry(usize index) const;
-		core::String entry_full_name(const Entry& entry) const;
+        usize hoverred_index() const;
+        const Entry* entry(usize index) const;
+        core::String entry_full_name(const Entry& entry) const;
 
-		void paint_ui(CmdBufferRecorder&, const FrameToken&) override;
 
-		virtual void update();
-		virtual void paint_context_menu();
-		virtual core::Result<core::String> entry_icon(const core::String&, EntryType type) const;
+        virtual void update();
+        virtual void draw_context_menu();
+        virtual core::Result<core::String> entry_icon(const core::String&, EntryType type) const;
 
-		virtual void path_changed() {}
-		virtual void entry_hoverred(const Entry*) {}
-		virtual void entry_clicked(const Entry& entry);
-		virtual bool allow_modify() const;
+        virtual void path_changed() {}
+        virtual void entry_hoverred(const Entry*) {}
+        virtual void entry_clicked(const Entry& entry);
+        virtual bool allow_modify() const;
 
-	private:
-		bool process_context_menu();
-		void make_drop_target(std::string_view drop_path);
+    protected:
+        void on_gui() override;
 
-		const FileSystemModel* _filesystem = nullptr;
+    private:
+        bool process_context_menu();
+        void make_drop_target(std::string_view drop_path);
 
-		bool _at_root = true;
-		bool _refresh = false;
+        const FileSystemModel* _filesystem = nullptr;
 
-		usize _hovered = usize(-1);
-		core::Vector<Entry> _entries;
+        bool _at_root = true;
+        bool _refresh = false;
 
-		core::String _current_path;
+        usize _hovered = usize(-1);
+        core::Vector<Entry> _entries;
 
-		static constexpr auto update_duration = core::Duration::seconds(1.0);
+        core::String _current_path;
 
-		core::Chrono _update_chrono;
+        static constexpr auto update_duration = core::Duration::seconds(1.0);
+
+        core::Chrono _update_chrono;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_FILESYSTEMVIEW_H
+

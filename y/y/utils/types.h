@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,20 @@ SOFTWARE.
 namespace y {
 
 struct NonCopyable {
-	constexpr NonCopyable() {}
-	NonCopyable(const NonCopyable&) = delete;
-	NonCopyable& operator=(const NonCopyable&) = delete;
+    inline constexpr NonCopyable() {}
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
 
-	NonCopyable(NonCopyable&&) = default;
-	NonCopyable& operator=(NonCopyable&&) = default;
+    NonCopyable(NonCopyable&&) = default;
+    NonCopyable& operator=(NonCopyable&&) = default;
 };
 
 struct NonMovable {
-	constexpr NonMovable() {}
-	NonMovable(const NonMovable&) = delete;
-	NonMovable& operator=(const NonMovable&) = delete;
+    inline constexpr NonMovable() {}
+    NonMovable(const NonMovable&) = delete;
+    NonMovable& operator=(const NonMovable&) = delete;
 
-	NonMovable(NonMovable&&) = delete;
+    NonMovable(NonMovable&&) = delete;
 };
 
 using u8 = uint8_t;
@@ -71,7 +71,60 @@ enum Enum { _ = u32(-1) };
 
 using uenum = std::underlying_type<detail::Enum>::type;
 
+inline constexpr usize operator"" _uu(unsigned long long int t) {
+    return usize(t);
+}
+
+
+
+template<typename T>
+class Uninitialized : NonMovable {
+    public:
+        Uninitialized() = default;
+
+        ~Uninitialized() {
+            y_debug_assert(!_is_init);
+        }
+
+        template<typename... Args>
+        T& init(Args&&... args) {
+            y_debug_assert((_is_init = !_is_init));
+            return *(new(&_storage.obj) T(y_fwd(args)...));
+        }
+
+        void destroy() {
+            y_debug_assert(!(_is_init = !_is_init));
+            _storage.obj.~T();
+        }
+
+        T& get() {
+            y_debug_assert(_is_init);
+            return _storage.obj;
+        }
+
+        const T& get() const {
+            y_debug_assert(_is_init);
+            return _storage.obj;
+        }
+    private:
+        union Storage {
+            Storage() : dummy(0) {
+            }
+
+            ~Storage() {
+            }
+
+            T obj;
+            u8 dummy;
+        } _storage;
+
+#ifdef Y_DEBUG
+        bool _is_init = false;
+#endif
+};
+
 }
 
 
 #endif // Y_UTILS_TYPES_H
+

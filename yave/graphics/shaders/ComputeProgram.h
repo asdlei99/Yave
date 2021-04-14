@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,27 +26,30 @@ SOFTWARE.
 
 namespace yave {
 
-class ComputeProgram final : NonCopyable, public DeviceLinked {
-	public:
-		ComputeProgram() = default;
-		ComputeProgram(ComputeProgram&&) = default;
-		ComputeProgram& operator=(ComputeProgram&&) = default;
+class ComputeProgram final {
+    public:
+        ComputeProgram() = default;
+        ComputeProgram(ComputeProgram&&) = default;
+        ComputeProgram& operator=(ComputeProgram&&) = default;
 
-		explicit ComputeProgram(const ComputeShader& comp, const SpecializationData& data = SpecializationData());
-		~ComputeProgram();
+        explicit ComputeProgram(const ComputeShader& comp, const SpecializationData& data = SpecializationData());
+        ~ComputeProgram();
 
-		const math::Vec3ui& local_size() const;
-		usize thread_count() const;
+        bool is_null() const;
 
-		VkPipeline vk_pipeline() const;
-		VkPipelineLayout vk_pipeline_layout() const;
+        const math::Vec3ui& local_size() const;
+        usize thread_count() const;
 
-	private:
-		SwapMove<VkPipelineLayout> _layout;
-		SwapMove<VkPipeline> _pipeline;
-		math::Vec3ui _local_size;
+        VkPipeline vk_pipeline() const;
+        VkPipelineLayout vk_pipeline_layout() const;
+
+    private:
+        VkHandle<VkPipelineLayout> _layout;
+        VkHandle<VkPipeline> _pipeline;
+        math::Vec3ui _local_size;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_SHADERS_COMPUTEPROGRAM_H
+

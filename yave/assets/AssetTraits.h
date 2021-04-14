@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ SOFTWARE.
 #ifndef YAVE_ASSETS_ASSETTRAITS_H
 #define YAVE_ASSETS_ASSETTRAITS_H
 
-#include <yave/utils/serde.h>
+#include <y/reflect/reflect.h>
 
 #include "AssetType.h"
 
@@ -32,23 +32,29 @@ namespace yave {
 
 template<typename T>
 struct AssetTraits {
-	static constexpr bool is_asset = false;
+    static constexpr bool is_asset = false;
 };
 
-#define YAVE_FILL_ASSET_TRAITS(Type, LoadFrom, TypeEnum)									\
-	static constexpr bool is_asset = true;													\
-	static constexpr AssetType type = TypeEnum;												\
-	using load_from = LoadFrom;																\
-	using Result = core::Result<Type>;
+Y_TODO(Merge these two)
 
+#define YAVE_DECLARE_GRAPHIC_ASSET_TRAITS(Type, LoadFrom, TypeEnum)                         \
+    template<>                                                                              \
+    struct AssetTraits<Type> {                                                              \
+        static constexpr bool is_asset = true;                                              \
+        static constexpr AssetType type = TypeEnum;                                         \
+        using load_from = LoadFrom;                                                         \
+    }
 
-#define YAVE_DECLARE_ASSET_TRAITS(Type, LoadFrom, TypeEnum)									\
-	template<>																				\
-	struct AssetTraits<Type> {																\
-		YAVE_FILL_ASSET_TRAITS(Type, LoadFrom, TypeEnum)									\
-	}
+#define YAVE_DECLARE_GENERIC_ASSET_TRAITS(Type, TypeEnum)                                   \
+    template<>                                                                              \
+    struct AssetTraits<Type> {                                                              \
+        static constexpr bool is_asset = true;                                              \
+        static constexpr AssetType type = TypeEnum;                                         \
+        using load_from = Type;                                                             \
+    }
 
 
 }
 
 #endif // YAVE_ASSETS_ASSETTRAITS_H
+

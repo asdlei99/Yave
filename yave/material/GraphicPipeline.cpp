@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,44 +20,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **********************************/
 #include "GraphicPipeline.h"
-#include "Material.h"
+#include "MaterialTemplate.h"
 
-#include <yave/device/Device.h>
+#include <yave/graphics/graphics.h>
 
 namespace yave {
 
-GraphicPipeline::GraphicPipeline(const MaterialTemplate* mat, VkPipeline pipeline, VkPipelineLayout layout) :
-		DeviceLinked(mat->device()),
-		_pipeline(pipeline),
-		_layout(layout)  {
+GraphicPipeline::GraphicPipeline(VkPipeline pipeline, VkPipelineLayout layout) :
+        _pipeline(pipeline),
+        _layout(layout)  {
 }
 
 GraphicPipeline::~GraphicPipeline() {
-	destroy(_pipeline);
-	destroy(_layout);
-}
-
-GraphicPipeline::GraphicPipeline(GraphicPipeline&& other) {
-	swap(other);
-}
-
-GraphicPipeline& GraphicPipeline::operator=(GraphicPipeline&& other) {
-	swap(other);
-	return *this;
-}
-
-void GraphicPipeline::swap(GraphicPipeline& other) {
-	DeviceLinked::swap(other);
-	std::swap(_pipeline, other._pipeline);
-	std::swap(_layout, other._layout);
+    device_destroy(_pipeline);
+    device_destroy(_layout);
 }
 
 VkPipeline GraphicPipeline::vk_pipeline() const {
-	return _pipeline;
+    return _pipeline;
 }
 
 VkPipelineLayout GraphicPipeline::vk_pipeline_layout() const {
-	return _layout;
+    return _layout;
 }
 
 }
+

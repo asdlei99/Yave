@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,37 @@ SOFTWARE.
 #define YAVE_GRAPHICS_SWAPCHAIN_FRAMETOKEN_H
 
 #include <yave/graphics/images/ImageView.h>
-#include <yave/graphics/commands/CmdBufferRecorder.h>
 
 namespace yave {
 
 struct FrameToken {
-	static constexpr u64 invalid_id = u64(-1);
+    static constexpr u64 invalid_id = u64(-1);
 
-	const u64 id;
-	const u32 image_index;
-	const u32 image_count;
+    const u64 id;
+    const u32 image_index;
+    const u32 image_count;
 
-	const ImageView<ImageUsage::ColorBit> image_view;
-	const VkSemaphore image_aquired = {};
-	const VkSemaphore render_finished = {};
+    const ImageView<ImageUsage::ColorBit> image_view;
 
+    bool operator==(const FrameToken& other) const {
+        return id == other.id &&
+               image_view == other.image_view &&
+               image_index == other.image_index &&
+               image_count == other.image_count;
+    }
 
-	bool operator==(const FrameToken& other) const {
-		return id == other.id &&
-			   image_view == other.image_view &&
-			   image_index == other.image_index &&
-			   image_count == other.image_count &&
-			   image_aquired == other.image_aquired &&
-			   render_finished == other.render_finished;
-	}
+    bool operator!=(const FrameToken& other) const {
+        return !operator==(other);
+    }
 
-	bool operator!=(const FrameToken& other) const {
-		return !operator==(other);
-	}
-
-	static FrameToken create_disposable(ImageView<ImageUsage::ColorBit> out_view) {
-		return FrameToken {
-				invalid_id,
-				0,
-				1,
-				out_view,
-				vk_null(), vk_null()
-			};
-	}
+    static FrameToken create_disposable(ImageView<ImageUsage::ColorBit> out_view) {
+        return FrameToken {
+                invalid_id,
+                0,
+                1,
+                out_view
+            };
+    }
 
 };
 
@@ -69,3 +62,4 @@ struct FrameToken {
 }
 
 #endif // YAVE_GRAPHICS_SWAPCHAIN_FRAMETOKEN_H
+

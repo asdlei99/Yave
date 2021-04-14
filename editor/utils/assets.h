@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@ SOFTWARE.
 
 #include <yave/assets/AssetType.h>
 
+#include <string_view>
+
 namespace editor {
 
 std::string_view asset_type_name(AssetType type, bool plural = false, bool lowercase = false);
@@ -34,3 +36,4 @@ std::string_view asset_type_icon(AssetType type);
 }
 
 #endif // EDITOR_UTILS_ASSETS_H
+

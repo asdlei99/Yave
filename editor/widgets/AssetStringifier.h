@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,29 @@ SOFTWARE.
 
 namespace editor {
 
-class AssetStringifier : public Widget, public ContextLinked {
-	public:
-		AssetStringifier(ContextPtr cptr);
+class AssetStringifier : public Widget {
 
-		void clear();
+    editor_widget(AssetStringifier, "View", "Debug")
 
-	private:
-		void paint_ui(CmdBufferRecorder& recorder, const FrameToken& token) override;
+    public:
+        AssetStringifier();
 
-		void stringify(AssetId id);
+        void clear();
 
-		AssetSelector _selector;
+    protected:
+        void on_gui() override;
 
-		AssetId _selected;
-		core::String _vertices;
-		core::String _triangles;
+    private:
+        void stringify(AssetId id);
+
+        AssetSelector _selector;
+
+        AssetId _selected;
+        core::String _vertices;
+        core::String _triangles;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_ASSETSTRINGIFIER_H
+

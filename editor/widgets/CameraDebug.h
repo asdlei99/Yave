@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,19 +22,23 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_CAMERADEBUG_H
 #define EDITOR_WIDGETS_CAMERADEBUG_H
 
-#include <editor/ui/Widget.h>
+#include <editor/Widget.h>
 
 namespace editor {
 
-class CameraDebug : public Widget, public ContextLinked {
-	public:
-		CameraDebug(ContextPtr cptr);
+class CameraDebug : public Widget {
 
-	private:
-		void paint_ui(CmdBufferRecorder&, const FrameToken&) override;
+    editor_widget(CameraDebug, "View", "Debug")
+
+    public:
+        CameraDebug();
+
+    protected:
+        void on_gui() override;
 };
 
 }
 
 
 #endif // EDITOR_WIDGETS_CAMERADEBUG_H
+

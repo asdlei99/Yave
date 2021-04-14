@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ SOFTWARE.
 
 #include "AssetStore.h"
 
-#include <yave/utils/serde.h>
+#include <y/reflect/reflect.h>
 
 namespace yave {
 
@@ -33,41 +33,42 @@ AssetStore::~AssetStore() {
 }
 
 AssetStore::Result<> AssetStore::remove(AssetId id) {
-	unused(id);
-	return core::Err(ErrorType::UnsupportedOperation);
+    unused(id);
+    return core::Err(ErrorType::UnsupportedOperation);
 }
 
 AssetStore::Result<> AssetStore::rename(AssetId id, std::string_view new_name) {
-	unused(id, new_name);
-	return core::Err(ErrorType::UnsupportedOperation);
+    unused(id, new_name);
+    return core::Err(ErrorType::UnsupportedOperation);
 }
 
 const FileSystemModel* AssetStore::filesystem() const {
-	return nullptr;
+    return nullptr;
 }
 
 AssetStore::Result<> AssetStore::remove(std::string_view name) {
-	if(const auto i = id(name)) {
-		 return remove(i.unwrap());
-	}
-	return core::Err(ErrorType::UnknownID);
+    if(const auto i = id(name)) {
+         return remove(i.unwrap());
+    }
+    return core::Err(ErrorType::UnknownID);
 }
 
 AssetStore::Result<> AssetStore::rename(std::string_view from, std::string_view to) {
-	if(const auto i = id(from)) {
-		 return rename(i.unwrap(), to);
-	}
-	return core::Err(ErrorType::UnknownID);
+    if(const auto i = id(from)) {
+         return rename(i.unwrap(), to);
+    }
+    return core::Err(ErrorType::UnknownID);
 }
 
 AssetStore::Result<> AssetStore::write(AssetId id, io2::Reader& data) {
-	unused(id, data);
-	return core::Err(ErrorType::UnsupportedOperation);
+    unused(id, data);
+    return core::Err(ErrorType::UnsupportedOperation);
 }
 
 AssetStore::Result<AssetType> AssetStore::asset_type(AssetId id) const {
-	unused(id);
-	return core::Err(ErrorType::UnsupportedOperation);
+    unused(id);
+    return core::Err(ErrorType::UnsupportedOperation);
 }
 
 }
+

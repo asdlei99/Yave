@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,27 +34,34 @@ SOFTWARE.
 
 namespace yave {
 
-class MaterialTemplate final : NonCopyable, public DeviceLinked {
+class MaterialTemplate final {
 
-	public:
-		static constexpr usize max_compiled_pipelines = 8;
+    public:
+        static constexpr usize max_compiled_pipelines = 8;
 
-		MaterialTemplate() = default;
-		MaterialTemplate(DevicePtr dptr, MaterialTemplateData&& data);
+        MaterialTemplate() = default;
+        MaterialTemplate(MaterialTemplateData&& data);
 
-		const GraphicPipeline& compile(const RenderPass& render_pass) const;
+        const GraphicPipeline& compile(const RenderPass& render_pass) const;
 
-		const MaterialTemplateData& data() const;
+        const MaterialTemplateData& data() const;
 
-	private:
-		//void swap(Material& other);
+        void set_name(const char* name);
 
-		mutable core::AssocVector<RenderPass::Layout, GraphicPipeline> _compiled;
+    private:
+        //void swap(Material& other);
 
-		MaterialTemplateData _data;
+        mutable core::AssocVector<RenderPass::Layout, GraphicPipeline> _compiled;
+
+        MaterialTemplateData _data;
+
+#ifdef Y_DEBUG
+        const char* _name = nullptr;
+#endif
 };
 
 }
 
 
 #endif // YAVE_MATERIAL_MATERIALTEMPLATE_H
+

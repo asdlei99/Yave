@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,10 +19,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 **********************************/
-#include "Material.h"
+#include "MaterialTemplate.h"
 #include "MaterialCompiler.h"
 
-#include <yave/device/Device.h>
+#include <yave/graphics/graphics.h>
+#include <yave/graphics/framebuffer/RenderPass.h>
+#include <yave/graphics/device/extensions/DebugUtils.h>
 
 #include <y/utils/log.h>
 #include <y/utils/format.h>
@@ -31,35 +33,48 @@ SOFTWARE.
 
 namespace yave {
 
-MaterialTemplate::MaterialTemplate(DevicePtr dptr, MaterialTemplateData&& data) :
-		DeviceLinked(dptr),
-		_data(std::move(data)) {
+MaterialTemplate::MaterialTemplate(MaterialTemplateData&& data) : _data(std::move(data)) {
 }
 
 const GraphicPipeline& MaterialTemplate::compile(const RenderPass& render_pass) const {
-	Y_TODO(make material compilation thread safe?)
-	if(!render_pass.vk_render_pass()) {
-		y_fatal("Unable to compile material: null renderpass.");
-	}
+    Y_TODO(make material compilation thread safe?)
+    if(!render_pass.vk_render_pass()) {
+        y_fatal("Unable to compile material: null renderpass.");
+    }
 
-	const auto& key = render_pass.layout();
-	const auto it = _compiled.find(key);
-	if(it == _compiled.end()) {
-		if(_compiled.size() == max_compiled_pipelines) {
-			log_msg("Discarding graphic pipeline", Log::Warning);
-			std::move(_compiled.begin() + 1, _compiled.end(), _compiled.begin());
-			_compiled.pop();
-		}
+    const auto& key = render_pass.layout();
+    const auto it = _compiled.find(key);
+    if(it == _compiled.end()) {
+        if(_compiled.size() == max_compiled_pipelines) {
+            log_msg("Discarding graphic pipeline", Log::Warning);
+            std::move(_compiled.begin() + 1, _compiled.end(), _compiled.begin());
+            _compiled.pop();
+        }
 
-		_compiled.insert(key, MaterialCompiler::compile(this, render_pass));
-		return _compiled.last().second;
-	}
-	return it->second;
+        _compiled.insert(key, MaterialCompiler::compile(this, render_pass));
+
+#ifdef Y_DEBUG
+        if(const auto* debug = debug_utils(); debug && _name) {
+            debug->set_resource_name(_compiled.last().second.vk_pipeline(), _name);
+        }
+#endif
+
+        return _compiled.last().second;
+    }
+    return it->second;
 }
 
 
 const MaterialTemplateData& MaterialTemplate::data() const {
-	return _data;
+    return _data;
+}
+
+void MaterialTemplate::set_name(const char* name) {
+    unused(name);
+#ifdef Y_DEBUG
+    _name = name;
+#endif
 }
 
 }
+

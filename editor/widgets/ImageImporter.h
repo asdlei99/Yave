@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -32,27 +32,30 @@ SOFTWARE.
 
 namespace editor {
 
-class ImageImporter final : public Widget, public ContextLinked {
+class ImageImporter final : public Widget {
 
-	public:
-		ImageImporter(ContextPtr ctx, const core::String& import_path = ".");
+    public:
+        ImageImporter();
+        ImageImporter(const core::String& import_path);
 
-	private:
-		void paint_ui(CmdBufferRecorder&recorder, const FrameToken&token) override;
+    protected:
+        void on_gui() override;
 
-		void import_async(const core::String& filename);
-		void import(const Named<ImageData>& asset);
+    private:
+        void import_async(const core::String& filename);
+        void import(const Named<ImageData>& asset);
 
-		bool done_loading() const;
-		bool is_loading() const;
+        bool done_loading() const;
+        bool is_loading() const;
 
-		FileBrowser _browser;
+        FileBrowser _browser;
 
-		core::String _import_path;
+        core::String _import_path;
 
-		std::future<Named<ImageData>> _import_future;
+        std::future<Named<ImageData>> _import_future;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_IMAGEIMPORTER_H
+

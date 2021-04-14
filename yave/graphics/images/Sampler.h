@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +22,28 @@ SOFTWARE.
 #ifndef YAVE_GRAPHICS_IMAGES_SAMPLER_H
 #define YAVE_GRAPHICS_IMAGES_SAMPLER_H
 
-#include <yave/yave.h>
+#include "SamplerType.h"
 
-#include "Image.h"
+#include <yave/graphics/vk/vk.h>
 
 namespace yave {
 
 Y_TODO(move to device)
-class Sampler final : NonCopyable, public DeviceLinked {
-	public:
-		enum Type {
-			Repeat,
-			Clamp
-		};
+class Sampler final {
+    public:
+        Sampler(SamplerType type = SamplerType::LinearRepeat);
+        ~Sampler();
 
-		Sampler() = default;
-		Sampler(Sampler&&) = default;
-		Sampler& operator=(Sampler&&) = default;
+        Sampler(Sampler&&) = default;
+        Sampler& operator=(Sampler&&) = default;
 
-		Sampler(DevicePtr dptr, Type type = Repeat);
+        VkSampler vk_sampler() const;
 
-		~Sampler();
-
-		VkSampler vk_sampler() const;
-
-	private:
-		SwapMove<VkSampler> _sampler;
+    private:
+        VkHandle<VkSampler> _sampler;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_IMAGES_SAMPLER_H
+

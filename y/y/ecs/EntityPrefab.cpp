@@ -29,21 +29,22 @@ namespace y {
 namespace ecs {
 
 /*EntityID EntityPrefab::add_to_world(EntityWorld& world) const {
-	auto infos = core::vector_with_capacity<ComponentRuntimeInfo>(_components.size());
-	for(const auto& cont : _components) {
-		y_debug_assert(cont);
-		infos.emplace_back(cont->create_runtime_info());
-	}
+    auto infos = core::vector_with_capacity<ComponentRuntimeInfo>(_components.size());
+    for(const auto& cont : _components) {
+        y_debug_assert(cont);
+        infos.emplace_back(cont->create_runtime_info());
+    }
 
-	const ArchetypeRuntimeInfo arc = ArchetypeRuntimeInfo::create(infos);
+    const ArchetypeRuntimeInfo arc = ArchetypeRuntimeInfo::create(infos);
 
-	const EntityID id = world.create_entity(arc);
+    const EntityID id = world.create_entity(arc);
 
-	y_fatal("...");
+    y_fatal("...");
 
-	return id;
+    return id;
 
 }*/
 
 }
 }
+

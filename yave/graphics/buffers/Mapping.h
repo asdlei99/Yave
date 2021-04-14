@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,35 +30,36 @@ class CmdBufferRecorder;
 
 class Mapping : NonMovable {
 
-	public:
-		Mapping() = default;
+    public:
+        Mapping() = default;
 
-		template<BufferUsage Usage>
-		Mapping(const Buffer<Usage, MemoryType::CpuVisible>& buffer) : Mapping(SubBuffer<BufferUsage::None, MemoryType::CpuVisible>(buffer)) {
-		}
+        template<BufferUsage Usage>
+        Mapping(const Buffer<Usage, MemoryType::CpuVisible>& buffer) : Mapping(SubBuffer<BufferUsage::None, MemoryType::CpuVisible>(buffer)) {
+        }
 
-		Mapping(const SubBuffer<BufferUsage::None, MemoryType::CpuVisible>& buffer);
+        Mapping(const SubBuffer<BufferUsage::None, MemoryType::CpuVisible>& buffer);
 
-		static void stage(const SubBuffer<BufferUsage::TransferDstBit>& dst, CmdBufferRecorder& recorder, const void* data);
+        static void stage(const SubBuffer<BufferUsage::TransferDstBit>& dst, CmdBufferRecorder& recorder, const void* data);
 
-		~Mapping();
+        ~Mapping();
 
-		// No need to barrier after flush
-		void flush();
+        // No need to barrier after flush
+        void flush();
 
-		void* data();
-		const void* data() const;
+        void* data();
+        const void* data() const;
 
-		usize byte_size() const;
+        usize byte_size() const;
 
-	protected:
-		void swap(Mapping& other);
+    protected:
+        void swap(Mapping& other);
 
-	private:
-		SubBufferBase _buffer;
-		void* _mapping = nullptr;
+    private:
+        SubBufferBase _buffer;
+        void* _mapping = nullptr;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_BUFFERS_MAPPING_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,11 @@ namespace yave {
 
 template<typename T>
 using is_safe_base = bool_type<!std::is_copy_constructible_v<T> &&
-							   !std::is_copy_assignable_v<T> &&
-							   !std::is_move_constructible_v<T> &&
-							   !std::is_move_assignable_v<T>>;
+                               !std::is_copy_assignable_v<T> &&
+                               !std::is_move_constructible_v<T> &&
+                               !std::is_move_assignable_v<T>>;
 
 }
 
 #endif // YAVE_UTILS_TRAITS_H
+

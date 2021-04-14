@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,10 @@ SOFTWARE.
 
 namespace yave {
 
-core::Result<float> entity_radius(ecs::EntityWorld& world, ecs::EntityId id);
-core::Result<math::Vec3> entity_position(ecs::EntityWorld& world, ecs::EntityId id);
+core::Result<float> entity_radius(const ecs::EntityWorld& world, ecs::EntityId id);
+core::Result<math::Vec3> entity_position(const ecs::EntityWorld& world, ecs::EntityId id);
 
 }
 
 #endif // YAVE_UTILS_ENTITIES_H
+

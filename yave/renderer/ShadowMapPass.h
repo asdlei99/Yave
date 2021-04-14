@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Gr�goire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,35 +22,36 @@ SOFTWARE.
 #ifndef YAVE_RENDERER_SHADOWMAPPASS_H
 #define YAVE_RENDERER_SHADOWMAPPASS_H
 
-#include <yave/graphics/images/IBLProbe.h>
-
 #include "GBufferPass.h"
 
 #include <y/core/HashMap.h>
 
 namespace yave {
 
-struct ShadowMapPassSettings {
-	math::Vec2ui shadow_map_size = math::Vec2ui(1024, 1024 * 8);
+struct ShadowMapSettings {
+    u32 shadow_map_size = 1024;
+    usize shadow_atlas_size = 8;
 };
 
 struct ShadowMapPass {
-	using ShadowData = uniform::ShadowMapParams;
+    using ShadowData = uniform::ShadowMapParams;
 
-	struct SubPass {
-		SceneRenderSubPass scene_pass;
-	};
+    struct SubPass {
+        SceneRenderSubPass scene_pass;
+        math::Vec2ui viewport_offset;
+        u32 viewport_size;
+    };
 
-	struct SubPassData {
-		core::Vector<SubPass> passes;
-		core::ExternalHashMap<u32, ShadowData> lights;
-	};
+    struct SubPassData {
+        core::Vector<SubPass> passes;
+        core::ExternalHashMap<u64, ShadowData> lights;
+    };
 
-	FrameGraphImageId shadow_map;
+    FrameGraphImageId shadow_map;
 
-	std::shared_ptr<SubPassData> sub_passes;
+    std::shared_ptr<SubPassData> sub_passes;
 
-	static ShadowMapPass create(FrameGraph& framegraph, const SceneView& scene, const ShadowMapPassSettings& settings = ShadowMapPassSettings());
+    static ShadowMapPass create(FrameGraph& framegraph, const SceneView& scene, const ShadowMapSettings& settings = ShadowMapSettings());
 };
 
 
@@ -58,3 +59,4 @@ struct ShadowMapPass {
 
 
 #endif // YAVE_RENDERER_SHADOWMAPPASS_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,28 +22,29 @@ SOFTWARE.
 #ifndef YAVE_GRAPHICS_COMMANDS_TIMEQUERY_H
 #define YAVE_GRAPHICS_COMMANDS_TIMEQUERY_H
 
-#include <y/core/Chrono.h>
-
 #include <yave/yave.h>
-#include "CmdBufferRecorder.h"
+#include <yave/graphics/graphics.h>
+
+#include <y/core/Chrono.h>
 
 namespace yave {
 
-class TimeQuery : NonMovable, public DeviceLinked {
+class TimeQuery {
 
-	public:
-		TimeQuery(DevicePtr dptr);
-		~TimeQuery();
+    public:
+        TimeQuery();
+        ~TimeQuery();
 
-		void start(CmdBufferRecorder& recorder);
-		void stop(CmdBufferRecorder& recorder);
+        void start(CmdBufferRecorder& recorder);
+        void stop(CmdBufferRecorder& recorder);
 
-		core::Duration get();
+        core::Duration get();
 
-	private:
-		VkQueryPool _pool;
+    private:
+        VkHandle<VkQueryPool> _pool;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_COMMANDS_TIMEQUERY_H
+

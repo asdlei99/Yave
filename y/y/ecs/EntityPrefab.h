@@ -29,14 +29,14 @@ namespace y {
 namespace ecs {
 
 class EntityPrefab {
-	public:
-		//EntityID add_to_world(EntityWorld& world) const;
+    public:
+        //EntityID add_to_world(EntityWorld& world) const;
 
-	private:
-		friend class EntityWorld;
-		friend class Archetype;
+    private:
+        friend class EntityWorld;
+        friend class Archetype;
 
-		core::Vector<std::unique_ptr<ComponentContainerBase>> _components;
+        core::Vector<std::unique_ptr<ComponentContainerBase>> _components;
 };
 
 }
@@ -44,3 +44,4 @@ class EntityPrefab {
 
 
 #endif // Y_ECS_ENTITYPREFAB_H
+

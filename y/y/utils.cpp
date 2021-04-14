@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,13 @@ SOFTWARE.
 #include <y/utils/format.h>
 #include <y/core/String.h>
 
+#include <y/concurrent/concurrent.h>
+
 #ifdef Y_OS_WIN
 #include <windows.h>
 #endif
 
-#ifdef __GNUG__
+#ifdef Y_GCC
 #include <cstdlib>
 #include <memory>
 #include <cxxabi.h>
@@ -47,24 +49,30 @@ bool break_on_error = false;
 
 void break_in_debugger() {
 #ifdef Y_OS_WIN
-	if(IsDebuggerPresent()) {
-		DebugBreak();
-	}
+    if(IsDebuggerPresent()) {
+        DebugBreak();
+    }
 #endif
 }
 
 
 void fatal(const char* msg, const char* file, int line) {
-	core::String msg_str(msg);
-	if(file) {
-		msg_str += fmt(" in file \"%\"", file);
-	}
-	if(line) {
-		msg_str += fmt(" at line %", line);
-	}
-	log_msg(msg_str, Log::Error);
-	y_breakpoint;
-	std::abort();
+    core::String msg_str(msg);
+    if(file) {
+        msg_str += fmt(" in file \"%\"", file);
+    }
+    if(line) {
+        msg_str += fmt(" at line %", line);
+    }
+
+    if(const char* thread_name = concurrent::thread_name()) {
+        msg_str += fmt(" on thread \"%\"", thread_name);
+    }
+
+    log_msg(msg_str, Log::Error);
+    y_breakpoint;
+    std::abort();
 }
 
 }
+

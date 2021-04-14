@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,24 +28,25 @@ SOFTWARE.
 
 namespace yave {
 
-class DeviceMemoryView : public DeviceLinked {
-	public:
-		DeviceMemoryView() = default;
-		DeviceMemoryView(const DeviceMemory& mem);
+class DeviceMemoryView {
+    public:
+        DeviceMemoryView() = default;
+        DeviceMemoryView(const DeviceMemory& mem);
 
-		VkMappedMemoryRange vk_mapped_range(usize size, usize offset = 0) const;
-		VkDeviceMemory vk_memory() const;
-		usize vk_offset() const;
+        VkMappedMemoryRange vk_mapped_range(usize size, usize offset = 0) const;
+        VkDeviceMemory vk_memory() const;
+        usize vk_offset() const;
 
-		void* map();
-		void unmap();
+        void* map();
+        void unmap();
 
-	private:
-		NotOwner<DeviceMemoryHeapBase*> _heap = nullptr;
-		VkDeviceMemory _memory = {};
-		usize _offset;
+    private:
+        DeviceMemoryHeapBase* _heap = nullptr;
+        VkDeviceMemory _memory = {};
+        usize _offset;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_MEMORY_DEVICEMEMORYVIEW_H
+

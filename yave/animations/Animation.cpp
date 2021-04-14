@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,21 +28,22 @@ Animation::Animation(float duration, core::Vector<AnimationChannel>&& channels) 
 }
 
 core::Span<AnimationChannel> Animation::channels() const {
-	return _channels;
+    return _channels;
 }
 
 float Animation::duration() const {
-	return _duration;
+    return _duration;
 }
 
 std::optional<math::Transform<>> Animation::bone_transform(const core::String& name, float time) const {
-	const auto channel = std::find_if(_channels.begin(), _channels.end(), [&](const auto& ch) { return ch.name() == name; });
+    const auto channel = std::find_if(_channels.begin(), _channels.end(), [&](const auto& ch) { return ch.name() == name; });
 
-	if(channel == _channels.end()) {
-		return std::optional<math::Transform<>>();
-	}
+    if(channel == _channels.end()) {
+        return std::optional<math::Transform<>>();
+    }
 
-	return std::optional(channel->bone_transform(time));
+    return std::optional(channel->bone_transform(time));
 }
 
 }
+

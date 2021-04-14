@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,31 @@ SOFTWARE.
 #define YAVE_COMPONENTS_DIRECTIONALLIGHTCOMPONENT_H
 
 #include <yave/yave.h>
-#include <yave/utils/serde.h>
+#include <y/reflect/reflect.h>
 
 namespace yave {
 
 class DirectionalLightComponent final {
-	public:
-		DirectionalLightComponent() = default;
+    public:
+        DirectionalLightComponent() = default;
 
-		math::Vec3& color();
-		const math::Vec3& color() const;
+        math::Vec3& color();
+        const math::Vec3& color() const;
 
-		math::Vec3& direction();
-		const math::Vec3& direction() const;
+        math::Vec3& direction();
+        const math::Vec3& direction() const;
 
-		float& intensity();
-		float intensity() const;
+        float& intensity();
+        float intensity() const;
 
-		y_serde3(_color, _direction, _intensity)
+        y_reflect(_color, _direction, _intensity)
 
-	private:
-		math::Vec3 _color = math::Vec3{1.0f};
-		math::Vec3 _direction = math::Vec3{0.0f, 0.0f, -1.0f};
-		float _intensity = 1.0f;
+    private:
+        math::Vec3 _color = math::Vec3{1.0f};
+        math::Vec3 _direction = math::Vec3{0.0f, 0.0f, -1.0f};
+        float _intensity = 1.0f;
 };
 }
 
 #endif // YAVE_COMPONENTS_DIRECTIONALLIGHTCOMPONENT_H
+

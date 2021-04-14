@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,27 @@ SOFTWARE.
 #ifndef YAVE_OBJECTS_RENDERABLE_H
 #define YAVE_OBJECTS_RENDERABLE_H
 
-#include <yave/graphics/commands/CmdBufferRecorder.h>
-#include <yave/graphics/swapchain/FrameToken.h>
-#include <yave/graphics/buffers/buffers.h>
-
 #include <yave/graphics/descriptors/uniforms.h>
 
 namespace yave {
 
 class Renderable {
 
-	public:
-		struct SceneData {
-			const DescriptorSetBase& descriptor_set;
-			const u32 instance_index;
-		};
+    public:
+        struct SceneData {
+            const DescriptorSetBase& descriptor_set;
+            const u32 instance_index;
+        };
 
-		using CameraData = uniform::Camera;
+        using CameraData = uniform::Camera;
 
-		/*virtual ~Renderable() {
-		}
+        /*virtual ~Renderable() {
+        }
 
-		virtual void render(RenderPassRecorder&, const SceneData&) const = 0;
+        virtual void render(RenderPassRecorder&, const SceneData&) const = 0;
 
-		virtual void flush_reload() {
-		}*/
+        virtual void flush_reload() {
+        }*/
 
 };
 
@@ -54,3 +50,4 @@ class Renderable {
 
 
 #endif // YAVE_OBJECTS_RENDERABLE_H
+

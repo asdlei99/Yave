@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,10 @@ struct Detector<Default, std::void_t<Op<Args...>>, Op, Args...> {
 };
 
 struct NoneSuch {
-	NoneSuch() = delete;
-	~NoneSuch() = delete;
-	NoneSuch(NoneSuch const&) = delete;
-	void operator=(NoneSuch const&) = delete;
+    NoneSuch() = delete;
+    ~NoneSuch() = delete;
+    NoneSuch(NoneSuch const&) = delete;
+    void operator=(NoneSuch const&) = delete;
 };
 } // namespace detail
 
@@ -57,3 +57,4 @@ inline constexpr bool is_detected_v = is_detected<Op, Args...>::value;
 
 
 #endif // Y_UTILS_DETECT_H
+

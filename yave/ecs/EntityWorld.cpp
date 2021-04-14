@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,13 @@ SOFTWARE.
 **********************************/
 
 #include "EntityWorld.h"
+
+
+#include <y/utils/log.h>
+#include <y/utils/format.h>
+
 #include <yave/assets/AssetLoadingContext.h>
+
 
 namespace yave {
 namespace ecs {
@@ -29,78 +35,178 @@ namespace ecs {
 EntityWorld::EntityWorld() {
 }
 
-EntityId EntityWorld::create_entity() {
-	EntityId id = _entities.create();
-	add_required_components(id);
-	return id;
+EntityWorld::~EntityWorld() {
 }
 
-void EntityWorld::remove_entity(EntityId id) {
-	if(id.is_valid()) {
-		_deletions << id;
-	}
+EntityWorld::EntityWorld(EntityWorld&& other) {
+    swap(other);
 }
 
-EntityId EntityWorld::id_from_index(EntityIndex index) const {
-	return _entities.id_from_index(index);
+EntityWorld& EntityWorld::operator=(EntityWorld&& other) {
+    swap(other);
+    return *this;
+}
+
+void EntityWorld::swap(EntityWorld& other) {
+    if(this != &other) {
+        std::swap(_containers, other._containers);
+        std::swap(_entities, other._entities);
+        std::swap(_required_components, other._required_components);
+        std::swap(_systems, other._systems);
+    }
+    for(const ComponentTypeIndex c : _required_components) {
+        unused(c);
+        y_debug_assert(find_container(c));
+    }
+}
+
+void EntityWorld::tick() {
+    y_profile();
+    for(auto& system : _systems) {
+        y_profile_dyn_zone(system->name().data());
+        system->tick(*this);
+    }
+    for(auto& container : _containers) {
+        container.second->clear_recent();
+    }
+}
+
+usize EntityWorld::entity_count() const {
+    return _entities.size();
 }
 
 bool EntityWorld::exists(EntityId id) const {
-	return _entities.contains(id);
+    return _entities.contains(id);
 }
 
-const EntityIdPool& EntityWorld::entities() const {
-	return _entities;
+EntityId EntityWorld::create_entity() {
+    const EntityId id = _entities.create();
+    for(const ComponentTypeIndex c : _required_components) {
+        ComponentContainerBase* container = find_container(c);
+        y_debug_assert(container && container->type_id() == c);
+        container->add(*this, id);
+    }
+    return id;
 }
 
-void EntityWorld::flush() {
-	y_profile();
-	if(!_deletions.is_empty()) {
-		for(const auto& c : _component_containers) {
-			c.second->remove(_deletions);
-		}
-		for(EntityId id : _deletions) {
-			_entities.recycle(id);
-		}
-		_deletions.clear();
-	}
+EntityId EntityWorld::create_entity(const Archetype& archetype) {
+    const EntityId id = create_entity();
+    for(const auto& info : archetype.component_infos()) {
+        ComponentContainerBase* cont = find_or_create_container(info);
+        cont->add(*this, id);
+    }
+    return id;
 }
 
-std::string_view EntityWorld::component_type_name(ComponentTypeIndex index) const {
-	static constexpr std::string_view no_name = "unknown";
-	const ComponentContainerBase* cont = container(index);
-	return cont ? cont->component_type_name() : no_name;
+EntityId EntityWorld::create_entity(const EntityPrefab& prefab) {
+    const EntityId id = create_entity();
+    for(const auto& comp : prefab.components()) {
+        if(!comp) {
+            log_msg("Unable to add null component", Log::Error);
+        } else {
+            comp->add_to(*this, id);
+        }
+    }
+    return id;
+}
+
+void EntityWorld::remove_entity(EntityId id) {
+    check_exists(id);
+    for(auto& cont : _containers.values()) {
+        cont->remove(id);
+    }
+    _entities.recycle(id);
+}
+
+EntityId EntityWorld::id_from_index(u32 index) const {
+    return _entities.id_from_index(index);
+}
+
+EntityPrefab EntityWorld::create_prefab(EntityId id) const {
+    check_exists(id);
+    EntityPrefab prefab;
+    for(auto& cont : _containers.values()) {
+        if(!cont->contains(id)) {
+            continue;
+        }
+        auto box = cont->create_box(id);
+        if(!box) {
+            log_msg(fmt("% is not copyable and was excluded from prefab", cont->runtime_info().type_name), Log::Warning);
+        }
+        prefab.add(std::move(box));
+    }
+    return prefab;
+}
+
+core::Span<EntityId> EntityWorld::component_ids(ComponentTypeIndex type_id) const {
+    const ComponentContainerBase* cont = find_container(type_id);
+    return cont ? cont->ids() : core::Span<EntityId>();
+}
+
+core::Span<EntityId> EntityWorld::recently_added(ComponentTypeIndex type_id) const {
+    const ComponentContainerBase* cont = find_container(type_id);
+    return cont ? cont->recently_added() : core::Span<EntityId>();
+}
+
+core::Span<ComponentTypeIndex> EntityWorld::required_components() const {
+    return _required_components;
+}
+
+std::string_view EntityWorld::component_type_name(ComponentTypeIndex type_id) const {
+    const ComponentContainerBase* cont = find_container(type_id);
+    return cont ? cont->runtime_info().type_name : "";
+}
+
+const ComponentContainerBase* EntityWorld::find_container(ComponentTypeIndex type_id) const {
+    if(const auto it = _containers.find(type_id); it != _containers.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+ComponentContainerBase* EntityWorld::find_container(ComponentTypeIndex type_id) {
+    if(const auto it = _containers.find(type_id); it != _containers.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+ComponentContainerBase* EntityWorld::find_or_create_container(const ComponentRuntimeInfo& info) {
+    auto& cont = _containers[info.type_id];
+    if(!cont) {
+        cont = info.create_type_container();
+    }
+    y_debug_assert(cont);
+    y_debug_assert(cont->type_id() == info.type_id);
+    return cont.get();
+}
+
+void EntityWorld::check_exists(EntityId id) const {
+    y_always_assert(exists(id), "Entity doesn't exists");
 }
 
 
-const ComponentContainerBase* EntityWorld::container(ComponentTypeIndex type) const {
-	if(const auto it = _component_containers.find(type); it != _component_containers.end()) {
-		return it->second.get();
-	}
-	return nullptr;
-}
+void EntityWorld::post_deserialize() {
+    core::ExternalHashMap<ComponentTypeIndex, std::unique_ptr<ComponentContainerBase>> patched;
+    for(auto& cont : _containers.values()) {
+        if(cont) {
+            patched[cont->type_id()] = std::move(cont);
+        }
+    }
+    _containers = std::move(patched);
 
-ComponentContainerBase* EntityWorld::container(ComponentTypeIndex type) {
-	auto& container = _component_containers[type];
-	if(!container) {
-		return nullptr;
-	}
-	return container.get();
-}
+    for(auto& system : _systems) {
+        y_debug_assert(system);
+        system->reset(*this);
+    }
 
-void EntityWorld::add_required_components(EntityId id) {
-	for(const ComponentTypeIndex& tpe : _required_components) {
-		create_component(id, tpe).ignore();
-	}
-}
 
-void EntityWorld::flush_reload(AssetLoader& loader) {
-	y_profile();
-	for(const auto& p : _component_containers) {
-		AssetLoadingContext loading_ctx(&loader);
-		p.second->post_deserialize_poly(loading_ctx);
-	}
+    for(const ComponentTypeIndex c : _required_components) {
+        unused(c);
+        y_debug_assert(find_container(c));
+    }
 }
 
 }
 }
+

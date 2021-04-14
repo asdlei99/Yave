@@ -32,98 +32,98 @@ namespace ecs {
 template<typename... Args>
 class EntityIterator {
 
-	using inner_iterator = ComponentIterator<true, Args...>;
+    using inner_iterator = ComponentIterator<true, Args...>;
 
-	public:
-		static constexpr usize component_count = inner_iterator::component_count;
+    public:
+        static constexpr usize component_count = inner_iterator::component_count;
 
-		using difference_type = void;
-		using reference = typename inner_iterator::reference;
-		using value_type = typename inner_iterator::value_type;
-		using pointer = typename inner_iterator::pointer;
+        using difference_type = void;
+        using reference = typename inner_iterator::reference;
+        using value_type = typename inner_iterator::value_type;
+        using pointer = typename inner_iterator::pointer;
 
-		using iterator_category = std::forward_iterator_tag;
+        using iterator_category = std::forward_iterator_tag;
 
-		EntityIterator(core::Span<std::unique_ptr<Archetype>> archetypes) : _archetypes(archetypes) {
-			if(!_archetypes.is_empty()) {
-				_components = archetype()->template view<Args...>();
-				if(_components.is_empty()) {
-					advance_archetype();
-				}
-			}
-		}
+        EntityIterator(core::Span<std::unique_ptr<Archetype>> archetypes) : _archetypes(archetypes) {
+            if(!_archetypes.is_empty()) {
+                _components = archetype()->template view<Args...>();
+                if(_components.is_empty()) {
+                    advance_archetype();
+                }
+            }
+        }
 
-		void advance() {
-			y_debug_assert(!_components.is_empty());
-			_components = decltype(_components)(_components.begin() + 1, _components.end());
-			if(_components.is_empty()) {
-				advance_archetype();
-			}
-		}
+        void advance() {
+            y_debug_assert(!_components.is_empty());
+            _components = decltype(_components)(_components.begin() + 1, _components.end());
+            if(_components.is_empty()) {
+                advance_archetype();
+            }
+        }
 
-		bool at_end() const {
-			return _archetype_index >= _archetypes.size();
-		}
+        bool at_end() const {
+            return _archetype_index >= _archetypes.size();
+        }
 
-		reference operator*() const {
-			y_debug_assert(!_components.is_empty());
-			y_debug_assert(!at_end());
-			return *_components.begin();
-		}
+        reference operator*() const {
+            y_debug_assert(!_components.is_empty());
+            y_debug_assert(!at_end());
+            return *_components.begin();
+        }
 
-		EntityIterator& operator++() {
-			advance();
-			return *this;
-		}
+        EntityIterator& operator++() {
+            advance();
+            return *this;
+        }
 
-		EntityIterator& operator--() {
-			advance();
-			return *this;
-		}
+        EntityIterator& operator--() {
+            advance();
+            return *this;
+        }
 
-		EntityIterator operator++(int) {
-			const auto it = *this;
-			++*this;
-			return it;
-		}
+        EntityIterator operator++(int) {
+            const auto it = *this;
+            ++*this;
+            return it;
+        }
 
-		EntityIterator operator--(int) {
-			const auto it = *this;
-			--*this;
-			return it;
-		}
+        EntityIterator operator--(int) {
+            const auto it = *this;
+            --*this;
+            return it;
+        }
 
-		bool operator==(const EntityIterator& other) const {
-			return _archetypes == other._archetype && _archetype_index == other._archetype_index && _components.size() == other._components.size();
-		}
+        bool operator==(const EntityIterator& other) const {
+            return _archetypes == other._archetype && _archetype_index == other._archetype_index && _components.size() == other._components.size();
+        }
 
-		bool operator!=(const EntityIterator& other) const {
-			return !operator==(other);
-		}
+        bool operator!=(const EntityIterator& other) const {
+            return !operator==(other);
+        }
 
-	private:
-		void advance_archetype() {
-			do {
-				++_archetype_index;
-				if(at_end()) {
-					break;
-				}
-				_components = archetype()->template view<Args...>();
-			} while(_components.is_empty());
-		}
+    private:
+        void advance_archetype() {
+            do {
+                ++_archetype_index;
+                if(at_end()) {
+                    break;
+                }
+                _components = archetype()->template view<Args...>();
+            } while(_components.is_empty());
+        }
 
-		const Archetype* archetype() const {
-			return _archetypes[_archetype_index].get();
-		}
+        const Archetype* archetype() const {
+            return _archetypes[_archetype_index].get();
+        }
 
-		Archetype* archetype() {
-			return _archetypes[_archetype_index].get();
-		}
+        Archetype* archetype() {
+            return _archetypes[_archetype_index].get();
+        }
 
-		ComponentView<Args...> _components;
+        ComponentView<Args...> _components;
 
-		usize _archetype_index = 0;
-		core::Span<std::unique_ptr<Archetype>> _archetypes;
+        usize _archetype_index = 0;
+        core::Span<std::unique_ptr<Archetype>> _archetypes;
 };
 
 template<typename... Args>
@@ -131,14 +131,15 @@ using EntityViewRange = core::Range<EntityIterator<Args...>, EndIterator>;
 
 template<typename... Args>
 struct EntityView : EntityViewRange<Args...> {
-	EntityView() : EntityView(EntityIterator<Args...>({})) {
-	}
+    EntityView() : EntityView(EntityIterator<Args...>({})) {
+    }
 
-	EntityView(EntityIterator<Args...> beg) : EntityViewRange<Args...>(std::move(beg), EndIterator()) {
-	}
+    EntityView(EntityIterator<Args...> beg) : EntityViewRange<Args...>(std::move(beg), EndIterator()) {
+    }
 };
 
 }
 }
 
 #endif // Y_ECS_ENTITYVIEW_H
+

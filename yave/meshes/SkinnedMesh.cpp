@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,47 +21,48 @@ SOFTWARE.
 **********************************/
 
 #include "SkinnedMesh.h"
+#include "MeshData.h"
 
 #include <yave/graphics/buffers/TypedWrapper.h>
 #include <yave/graphics/commands/CmdBufferRecorder.h>
-#include <yave/graphics/commands/RecordedCmdBuffer.h>
-#include <yave/device/Device.h>
+#include <yave/graphics/graphics.h>
 
 namespace yave {
 
-SkinnedMesh::SkinnedMesh(DevicePtr dptr, const MeshData& mesh_data) :
-		_triangle_buffer(dptr, mesh_data.triangles().size()),
-		_vertex_buffer(dptr, mesh_data.skinned_vertices().size()),
-		_skeleton(mesh_data.bones()),
-		_radius(mesh_data.radius()) {
+SkinnedMesh::SkinnedMesh(const MeshData& mesh_data) :
+        _triangle_buffer(mesh_data.triangles().size()),
+        _vertex_buffer(mesh_data.skinned_vertices().size()),
+        _skeleton(mesh_data.bones()),
+        _radius(mesh_data.radius()) {
 
-	_indirect_data.indexCount = mesh_data.triangles().size() * 3;
-	_indirect_data.instanceCount = 1;
+    _indirect_data.indexCount = u32(mesh_data.triangles().size() * 3);
+    _indirect_data.instanceCount = 1;
 
-	CmdBufferRecorder recorder(dptr->create_disposable_cmd_buffer());
-	Mapping::stage(_triangle_buffer, recorder, mesh_data.triangles().data());
-	Mapping::stage(_vertex_buffer, recorder, mesh_data.skinned_vertices().data());
-	dptr->graphic_queue().submit<SyncSubmit>(RecordedCmdBuffer(std::move(recorder)));
+    CmdBufferRecorder recorder(create_disposable_cmd_buffer());
+    Mapping::stage(_triangle_buffer, recorder, mesh_data.triangles().data());
+    Mapping::stage(_vertex_buffer, recorder, mesh_data.skinned_vertices().data());
+    std::move(recorder).submit<SyncPolicy::Sync>();
 }
 
 const TriangleBuffer<>& SkinnedMesh::triangle_buffer() const {
-	return _triangle_buffer;
+    return _triangle_buffer;
 }
 
 const SkinnedVertexBuffer<>& SkinnedMesh::vertex_buffer() const {
-	return _vertex_buffer;
+    return _vertex_buffer;
 }
 
 const VkDrawIndexedIndirectCommand& SkinnedMesh::indirect_data() const {
-	return _indirect_data;
+    return _indirect_data;
 }
 
 const Skeleton& SkinnedMesh::skeleton() const {
-	return _skeleton;
+    return _skeleton;
 }
 
 float SkinnedMesh::radius() const {
-	return _radius;
+    return _radius;
 }
 
 }
+

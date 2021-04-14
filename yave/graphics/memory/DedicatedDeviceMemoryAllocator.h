@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,25 +28,26 @@ namespace yave {
 
 // Allocator disgased as a heap
 class DedicatedDeviceMemoryAllocator : public DeviceMemoryHeapBase {
-	public:
-		DedicatedDeviceMemoryAllocator(DevicePtr dptr, MemoryType type);
+    public:
+        DedicatedDeviceMemoryAllocator(MemoryType type);
 
-		~DedicatedDeviceMemoryAllocator() override;
+        ~DedicatedDeviceMemoryAllocator() override;
 
-		core::Result<DeviceMemory> alloc(VkMemoryRequirements reqs) override;
-		void free(const DeviceMemory& memory) override;
+        core::Result<DeviceMemory> alloc(VkMemoryRequirements reqs) override;
+        void free(const DeviceMemory& memory) override;
 
-		void* map(const DeviceMemoryView& view) override;
-		void unmap(const DeviceMemoryView& view) override;
+        void* map(const DeviceMemoryView& view) override;
+        void unmap(const DeviceMemoryView& view) override;
 
-		usize allocated_size() const;
+        usize allocated_size() const;
 
-	private:
-		MemoryType _type;
+    private:
+        MemoryType _type;
 
-		usize _size = 0;
+        usize _size = 0;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_MEMORY_DEDICATEDDEVICEMEMORYALLOCATOR_H
+

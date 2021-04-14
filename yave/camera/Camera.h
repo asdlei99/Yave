@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,38 +29,42 @@ namespace yave {
 
 class Camera {
 
-	public:
-		Camera();
+    public:
+        Camera();
 
-		void set_view(const math::Matrix4<>& view);
-		void set_proj(const math::Matrix4<>& proj);
+        void set_view(const math::Matrix4<>& view);
+        void set_proj(const math::Matrix4<>& proj);
 
-		const math::Matrix4<>& view_matrix() const;
-		const math::Matrix4<>& proj_matrix() const;
+        const math::Matrix4<>& view_matrix() const;
+        const math::Matrix4<>& proj_matrix() const;
 
-		const math::Matrix4<>& viewproj_matrix() const;
+        const math::Matrix4<>& viewproj_matrix() const;
 
-		math::Matrix4<> inverse_matrix() const;
+        math::Matrix4<> inverse_matrix() const;
 
-		math::Vec3 position() const;
-		math::Vec3 forward() const;
-		math::Vec3 left() const;
-		math::Vec3 right() const;
-		math::Vec3 up() const;
-		Frustum frustum() const;
+        float aspect_ratio() const;
+        float field_of_view() const;
 
-		operator uniform::Camera() const;
+        math::Vec3 position() const;
+        math::Vec3 forward() const;
+        math::Vec3 right() const;
+        math::Vec3 up() const;
+        Frustum frustum() const;
 
-	private:
-		void update_viewproj() const;
+        operator uniform::Camera() const;
 
-		math::Matrix4<> _view;
-		math::Matrix4<> _proj;
+    private:
+        void update_viewproj() const;
 
-		mutable math::Matrix4<> _viewproj;
-		mutable bool _up_to_date;
+        math::Matrix4<> _view;
+        math::Matrix4<> _proj;
+
+        Y_TODO(This is not thread safe)
+        mutable math::Matrix4<> _viewproj;
+        mutable bool _dirty = true;
 };
 
 }
 
 #endif // YAVE_CAMERA_CAMERA_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Gr�goire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -30,15 +30,16 @@ AssetLoadingContext::AssetLoadingContext(AssetLoader* loader) : AssetLoadingCont
 }
 
 AssetLoadingContext::AssetLoadingContext(AssetLoader* loader, AssetLoadingFlags flags) : _parent(loader), _dependencies(flags) {
-	y_always_assert(loader, "Invalid parent");
+    y_always_assert(loader, "Invalid parent");
 }
 
 const AssetDependencies& AssetLoadingContext::dependencies() const {
-	return _dependencies;
+    return _dependencies;
 }
 
 AssetLoader* AssetLoadingContext::parent() const {
-	return _parent;
+    return _parent;
 }
 
 }
+

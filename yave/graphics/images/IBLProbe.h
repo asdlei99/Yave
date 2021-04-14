@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,18 @@ SOFTWARE.
 
 namespace yave {
 
-class IBLProbe : public Cubemap {
+class IBLProbe final : public Cubemap {
+    public:
+        IBLProbe() = default;
+        IBLProbe(const ImageData& data);
 
-	public:
-		static IBLProbe from_cubemap(const Cubemap& cube);
-		static IBLProbe from_equirec(const Texture& equirec);
-
-		IBLProbe() = default;
+        static IBLProbe from_cubemap(const Cubemap& cube);
+        static IBLProbe from_equirec(const Texture& equirec);
 };
+
+YAVE_DECLARE_GRAPHIC_ASSET_TRAITS(IBLProbe, ImageData, AssetType::Image);
 
 }
 
 #endif // YAVE_GRAPHICS_IMAGES_IBLPROBE_H
+

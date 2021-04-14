@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,31 +31,30 @@ namespace {
 using namespace y;
 
 struct DRaii : NonCopyable {
-	DRaii(usize& i) : _i(&i) {
-		++(*_i);
-	}
+    DRaii(usize& i) : _i(&i) {
+        ++(*_i);
+    }
 
-	~DRaii() {
-		if(_i) {
-			--(*_i);
-		}
-	}
+    ~DRaii() {
+        if(_i) {
+            --(*_i);
+        }
+    }
 
-	DRaii(DRaii&& r) : _i(std::exchange(r._i, nullptr)) {
-	}
+    DRaii(DRaii&& r) : _i(std::exchange(r._i, nullptr)) {
+    }
 
-	usize* _i = nullptr;
+    usize* _i = nullptr;
 };
 
 y_test_func("utils do_not_destroy") {
-	usize i = 0;
-	{
-		DRaii r(i);
-		y_test_assert(i == 1);
-		do_not_destroy(std::move(r));
-	}
-	y_test_assert(i == 1);
+    usize i = 0;
+    {
+        DRaii r(i);
+        y_test_assert(i == 1);
+        do_not_destroy(std::move(r));
+    }
+    y_test_assert(i == 1);
 }
 }
-
 

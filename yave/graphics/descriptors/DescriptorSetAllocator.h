@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,10 @@ SOFTWARE.
 #ifndef YAVE_GRAPHICS_DESCRIPTORS_DESCRIPTORSETALLOCATOR_H
 #define YAVE_GRAPHICS_DESCRIPTORS_DESCRIPTORSETALLOCATOR_H
 
+#include "DescriptorSetData.h"
 
-#include <yave/graphics/vk/vk.h>
-#include <yave/device/DeviceLinked.h>
+#include <yave/graphics/graphics.h>
+#include <yave/graphics/buffers/Buffer.h>
 
 #include <y/utils/hash.h>
 #include <y/core/Vector.h>
@@ -32,135 +33,131 @@ SOFTWARE.
 
 #include <mutex>
 #include <bitset>
+#include <memory>
 #include <algorithm>
 #include <memory>
 
 namespace std {
 template<>
 struct hash<VkDescriptorSetLayoutBinding> {
-	auto operator()(const VkDescriptorSetLayoutBinding& l) const {
-		const char* data = reinterpret_cast<const char*>(&l);
-		return y::hash_range(data, data + sizeof(l));
-	}
+    auto operator()(const VkDescriptorSetLayoutBinding& l) const {
+        const char* data = reinterpret_cast<const char*>(&l);
+        return y::hash_range(data, data + sizeof(l));
+    }
 };
 
 template<>
 struct hash<y::core::Vector<VkDescriptorSetLayoutBinding>> {
-	auto operator()(const y::core::Vector<VkDescriptorSetLayoutBinding>& k) const {
-		return y::hash_range(k);
-	}
+    auto operator()(const y::core::Vector<VkDescriptorSetLayoutBinding>& k) const {
+        return y::hash_range(k);
+    }
 };
 }
 
 namespace yave {
 
-class Descriptor;
-class DescriptorSetPool;
+class DescriptorSetLayout {
+    public:
+        static constexpr usize descriptor_type_count = 12;
 
-class DescriptorSetLayout : NonCopyable, public DeviceLinked {
-	public:
-		static constexpr usize descriptor_type_count = 12;
+        struct InlineBlock {
+            u32 binding;
+            u32 byte_size;
+        };
 
-		DescriptorSetLayout() = default;
-		DescriptorSetLayout(DevicePtr dptr, core::Span<VkDescriptorSetLayoutBinding> bindings);
+        DescriptorSetLayout() = default;
+        DescriptorSetLayout(core::Span<VkDescriptorSetLayoutBinding> bindings);
 
-		DescriptorSetLayout(DescriptorSetLayout&&) = default;
-		DescriptorSetLayout& operator=(DescriptorSetLayout&&) = default;
+        DescriptorSetLayout(DescriptorSetLayout&&) = default;
+        DescriptorSetLayout& operator=(DescriptorSetLayout&&) = default;
 
-		~DescriptorSetLayout();
+        ~DescriptorSetLayout();
 
-		const std::array<u32, descriptor_type_count>& desciptors_count() const;
+        bool is_null() const;
 
-		VkDescriptorSetLayout vk_descriptor_set_layout() const;
+        const std::array<u32, descriptor_type_count>& desciptors_count() const;
 
-	private:
-		SwapMove<VkDescriptorSetLayout> _layout;
-		std::array<u32, descriptor_type_count> _sizes = {};
+        core::Span<InlineBlock> inline_blocks_fallbacks() const;
+        usize inline_blocks() const;
+
+        VkDescriptorSetLayout vk_descriptor_set_layout() const;
+
+    private:
+        VkHandle<VkDescriptorSetLayout> _layout;
+        std::array<u32, descriptor_type_count> _sizes = {};
+
+        usize _inline_blocks = 0;
+        core::Vector<InlineBlock> _inline_blocks_fallbacks;
 };
 
-class DescriptorSetData {
-	public:
-		DescriptorSetData() = default;
+class DescriptorSetPool : NonMovable {
+    public:
+        static constexpr usize pool_size = 128;
 
-		DevicePtr device() const;
-		bool is_null() const;
+        DescriptorSetPool(const DescriptorSetLayout& layout);
+        ~DescriptorSetPool();
 
-		VkDescriptorSetLayout vk_descriptor_set_layout() const;
-		VkDescriptorSet vk_descriptor_set() const;
+        DescriptorSetData alloc(core::Span<Descriptor> descriptors);
+        void recycle(u32 id);
 
-	private:
-		friend class LifetimeManager;
+        bool is_full() const;
 
-		void recycle();
+        VkDescriptorSet vk_descriptor_set(u32 id) const;
+        VkDescriptorPool vk_pool() const;
+        VkDescriptorSetLayout vk_descriptor_set_layout() const;
 
-	private:
-		friend class DescriptorSetPool;
+        // Slow: for debug only
+        usize free_sets() const;
+        usize used_sets() const;
 
-		DescriptorSetData(DescriptorSetPool* pool, u32 id);
+    private:
+        void update_set(u32 id, core::Span<Descriptor> descriptors);
 
-		DescriptorSetPool* _pool = nullptr;
-		u32 _index = 0;
+        usize inline_sub_buffer_alignment() const;
+
+        std::bitset<pool_size> _taken;
+        u32 _first_free = 0;
+
+        mutable concurrent::SpinLock _lock;
+
+        std::array<VkDescriptorSet, pool_size> _sets;
+        VkHandle<VkDescriptorPool> _pool;
+        VkHandle<VkDescriptorSetLayout> _layout;
+
+        usize _inline_blocks = 0;
+        usize _descriptor_buffer_size = 0;
+        Buffer<BufferUsage::UniformBit> _inline_buffer;
 };
 
-class DescriptorSetPool : NonMovable, public DeviceLinked {
-	public:
-		static constexpr usize pool_size = 128;
+class DescriptorSetAllocator {
 
-		DescriptorSetPool(const DescriptorSetLayout& layout);
-		~DescriptorSetPool();
+    using Key = core::Vector<VkDescriptorSetLayoutBinding>;
 
-		DescriptorSetData alloc();
-		void recycle(u32 id);
+    struct LayoutPools : NonMovable {
+        DescriptorSetLayout layout;
+        core::Vector<std::unique_ptr<DescriptorSetPool>> pools;
+    };
 
-		bool is_full() const;
+    public:
+        DescriptorSetAllocator();
 
-		VkDescriptorSet vk_descriptor_set(u32 id) const;
-		VkDescriptorPool vk_pool() const;
-		VkDescriptorSetLayout vk_descriptor_set_layout() const;
+        DescriptorSetData create_descritptor_set(core::Span<Descriptor> descriptors);
+        const DescriptorSetLayout& descriptor_set_layout(const Key& bindings);
 
-		// Slow: for debug only
-		usize free_sets() const;
-		usize used_sets() const;
+        // Slow: for debug only
+        usize layout_count() const;
+        usize pool_count() const;
+        usize free_sets() const;
+        usize used_sets() const;
 
-	private:
-		std::bitset<pool_size> _taken;
-		u32 _first_free = 0;
+    private:
+        LayoutPools& layout(const Key& bindings);
 
-		mutable concurrent::SpinLock _lock;
-
-		std::array<VkDescriptorSet, pool_size> _sets;
-		VkDescriptorPool _pool = {};
-		VkDescriptorSetLayout _layout = {};
-};
-
-class DescriptorSetAllocator : NonCopyable, public DeviceLinked  {
-
-	using Key = core::Vector<VkDescriptorSetLayoutBinding>;
-
-	struct LayoutPools : NonMovable {
-		DescriptorSetLayout layout;
-		core::Vector<std::unique_ptr<DescriptorSetPool>> pools;
-	};
-
-	public:
-		DescriptorSetAllocator(DevicePtr dptr);
-
-		DescriptorSetData create_descritptor_set(const Key& bindings);
-		const DescriptorSetLayout& descriptor_set_layout(const Key& bindings);
-
-		// Slow: for debug only
-		usize layout_count() const;
-		usize pool_count() const;
-		usize free_sets() const;
-		usize used_sets() const;
-
-	private:
-		LayoutPools& layout(const Key& bindings);
-
-		std::unordered_map<Key, LayoutPools> _layouts;
-		mutable std::mutex _lock;
+        std::unordered_map<Key, LayoutPools> _layouts;
+        mutable std::mutex _lock;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_DESCRIPTORS_DESCRIPTORSETALLOCATOR_H
+

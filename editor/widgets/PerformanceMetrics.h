@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,67 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_PERFORMANCEMETRICS_H
 #define EDITOR_WIDGETS_PERFORMANCEMETRICS_H
 
-#include <editor/ui/Widget.h>
+#include <editor/Widget.h>
 
+#include <y/core/FixedArray.h>
 #include <y/core/Chrono.h>
+
 
 namespace editor {
 
-class PerformanceMetrics : public Widget, public ContextLinked {
-	public:
-		PerformanceMetrics(ContextPtr cptr);
+class PerformanceMetrics : public Widget {
 
-	private:
-		void paint_ui(CmdBufferRecorder&, const FrameToken&) override;
+    editor_widget(PerformanceMetrics, "View", "Statistics")
 
-		core::Chrono _timer;
+    class PlotData {
+        public:
+            PlotData(core::Duration total_duration = core::Duration::seconds(60.0), usize size = 256);
 
-		std::array<float, 128> _frames;
-		usize _current_frame = 0;
+            void push(float value);
+            float last();
 
-		usize _current_average = 0;
-		std::array<float, 128> _average;
-		
-		double _total = 0.0;
-		float _max = 16.0f;
+            core::Span<float> values() const;
+            usize value_count() const;
+            usize current_index() const;
+            usize next_index() const;
+            float max() const;
+            float average() const;
+
+        private:
+            void advance();
+
+            core::Chrono _timer;
+
+            core::FixedArray<float> _data;
+            usize _current = 0;
+            bool _full = false;
+
+            float _max = 0.0f;
+            double _total = 0.0;
+
+            double _duration = 1.0;
+    };
+
+    public:
+        PerformanceMetrics();
+
+    protected:
+        void on_gui() override;
+
+        bool before_gui() override;
+
+    private:
+        void draw_timings();
+        void draw_memory();
+
+        core::Chrono _timer;
+
+        PlotData _frames;
+        PlotData _average;
+        PlotData _memory;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_PERFORMANCEMETRICS_H
+

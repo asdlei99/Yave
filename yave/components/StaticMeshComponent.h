@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,45 +22,65 @@ SOFTWARE.
 #ifndef YAVE_COMPONENTS_STATICMESHCOMPONENT_H
 #define YAVE_COMPONENTS_STATICMESHCOMPONENT_H
 
-#include <yave/ecs/ecs.h>
-
-#include <yave/meshes/StaticMesh.h>
-#include <yave/material/Material.h>
-
-#include <yave/scene/Renderable.h>
+#include "HasLoadableAssetsTag.h"
 
 #include "TransformableComponent.h"
 
+#include <yave/scene/Renderable.h>
+#include <yave/meshes/AABB.h>
+
+#include <y/core/Vector.h>
+
 namespace yave {
 
-class StaticMeshComponent final : public Renderable, public ecs::RequiredComponents<TransformableComponent> {
+class StaticMeshComponent final :
+        public Renderable,
+        public ecs::RequiredComponents<TransformableComponent>,
+        public HasLoadableAssetsTag<StaticMeshComponent> {
 
-	public:
-		StaticMeshComponent() = default;
-		StaticMeshComponent(const AssetPtr<StaticMesh>& mesh, const AssetPtr<Material>& material);
+    public:
+        struct SubMesh {
+            AssetPtr<StaticMesh> mesh;
+            AssetPtr<Material> material;
 
-		//StaticMeshComponent(StaticMeshComponent&&) = default;
-		//StaticMeshComponent& operator=(StaticMeshComponent&&) = default;
-		//~StaticMeshComponent();
+            SubMesh() = default;
+            SubMesh(const AssetPtr<StaticMesh>& me, const AssetPtr<Material>& ma);
 
-		void flush_reload();
+            void render(RenderPassRecorder& recorder, const SceneData& scene_data) const;
+            void render_mesh(RenderPassRecorder& recorder, u32 instance_index) const;
 
-		void render(RenderPassRecorder& recorder, const SceneData& scene_data) const;
-		void render_mesh(RenderPassRecorder& recorder, u32 instance_index) const;
+            bool operator==(const SubMesh& other) const;
+            bool operator!=(const SubMesh& other) const;
 
-		const AssetPtr<StaticMesh>& mesh() const;
-		const AssetPtr<Material>& material() const;
+            y_reflect(mesh, material)
+        };
 
-		AssetPtr<StaticMesh>& mesh();
-		AssetPtr<Material>& material();
+        StaticMeshComponent() = default;
+        StaticMeshComponent(const AssetPtr<StaticMesh>& mesh, const AssetPtr<Material>& material);
+        StaticMeshComponent(core::Vector<SubMesh> sub_meshes);
 
-		y_serde3(_mesh, _material)
+        void render(RenderPassRecorder& recorder, const SceneData& scene_data) const;
+        void render_mesh(RenderPassRecorder& recorder, u32 instance_index) const;
 
-	private:
-		AssetPtr<StaticMesh> _mesh;
-		AssetPtr<Material> _material;
+        const core::Vector<SubMesh>& sub_meshes() const;
+        core::Vector<SubMesh>& sub_meshes();
+
+        const AABB& aabb() const;
+
+        bool update_asset_loading_status();
+        void load_assets(AssetLoadingContext& loading_ctx);
+
+        y_reflect(_sub_meshes)
+
+    private:
+        AABB compute_aabb() const;
+
+        core::Vector<SubMesh> _sub_meshes;
+        AABB _aabb;
+
 };
 
 }
 
 #endif // YAVE_COMPONENTS_STATICMESHCOMPONENT_H
+

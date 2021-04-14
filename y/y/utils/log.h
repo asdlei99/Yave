@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@ SOFTWARE.
 namespace y {
 
 enum class Log {
-	Info,
-	Warning,
-	Error,
-	Debug,
-	Perf
+    Info,
+    Warning,
+    Error,
+    Debug,
+    Perf
 };
 
 void log_msg(std::string_view msg, Log type = Log::Info);
@@ -49,3 +49,4 @@ void set_log_callback(detail::log_callback func, void* user_data = nullptr);
 }
 
 #endif // Y_UTILS_LOG_H
+

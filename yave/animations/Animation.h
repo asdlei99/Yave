@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,25 +29,26 @@ SOFTWARE.
 namespace yave {
 
 class Animation {
-	public:
-		Animation() = default;
+    public:
+        Animation() = default;
 
-		Animation(float duration, core::Vector<AnimationChannel>&& channels);
+        Animation(float duration, core::Vector<AnimationChannel>&& channels);
 
-		float duration() const;
-		core::Span<AnimationChannel> channels() const;
+        float duration() const;
+        core::Span<AnimationChannel> channels() const;
 
-		std::optional<math::Transform<>> bone_transform(const core::String& name, float time) const;
+        std::optional<math::Transform<>> bone_transform(const core::String& name, float time) const;
 
 
-		y_serde3(_duration, _channels)
+        y_reflect(_duration, _channels)
 
-	private:
-		float _duration = 0.0f;
-		core::Vector<AnimationChannel> _channels;
+    private:
+        float _duration = 0.0f;
+        core::Vector<AnimationChannel> _channels;
 
 };
 
 }
 
 #endif // YAVE_ANIMATIONS_ANIMATIONDATA_H
+

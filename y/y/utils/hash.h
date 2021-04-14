@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,47 +33,37 @@ namespace y {
 
 // from boost
 template<typename T>
-constexpr void hash_combine(T& seed, T value) {
-	seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+inline constexpr void hash_combine(T& seed, T value) {
+    seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
 template<typename T>
-constexpr u64 type_hash() {
-	u64 hash = 0xdeaddead;
-	Y_TODO(Replace by ct_type_name)
-	for(char c : Y_FUNCTION_NAME) {
-		hash_combine(hash, u64(c));
-	}
-	return hash;
-}
-
-template<typename T>
-constexpr u64 type_hash_2() {
-	u64 hash = 0xd5a7de585d2af52b;
-	for(char c : ct_type_name<T>()) {
-		hash_combine(hash, u64(c));
-	}
-	return hash;
+inline constexpr u64 ct_type_hash() {
+    u64 hash = 0xd5a7de585d2af52b;
+    for(char c : ct_type_name<T>()) {
+        hash_combine(hash, u64(c));
+    }
+    return hash;
 }
 
 
 template<typename T>
 inline auto hash(const T& t) {
-	return std::hash<T>()(t);
+    return std::hash<T>()(t);
 }
 
 template<typename B, typename E>
 inline auto hash_range(B begin, const E& end) {
-	decltype(hash(*begin)) h = 0;
-	for(; begin != end; ++begin) {
-		hash_combine(h, hash(*begin));
-	}
-	return h;
+    decltype(hash(*begin)) h = 0;
+    for(; begin != end; ++begin) {
+        hash_combine(h, hash(*begin));
+    }
+    return h;
 }
 
 template<typename C>
 inline auto hash_range(const C& c) {
-	return hash_range(std::begin(c), std::end(c));
+    return hash_range(std::begin(c), std::end(c));
 }
 
 }
@@ -81,12 +71,13 @@ inline auto hash_range(const C& c) {
 namespace std {
 template<typename A, typename B>
 struct hash<std::pair<A, B>> : hash<A>, hash<B> {
-	auto operator()(const std::pair<A, B>& p) const {
-		auto a = hash<A>::operator()(p.first);
-		y::hash_combine(a, hash<B>::operator()(p.second));
-		return a;
-	}
+    auto operator()(const std::pair<A, B>& p) const {
+        auto a = hash<A>::operator()(p.first);
+        y::hash_combine(a, hash<B>::operator()(p.second));
+        return a;
+    }
 };
 }
 
 #endif // Y_UTILS_HASH_H
+

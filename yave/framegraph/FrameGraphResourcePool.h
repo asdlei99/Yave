@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,49 +22,46 @@ SOFTWARE.
 #ifndef YAVE_FRAMEGRAPH_FRAMEGRAPHRESOURCEPOOL_H
 #define YAVE_FRAMEGRAPH_FRAMEGRAPHRESOURCEPOOL_H
 
+#include "TransientBuffer.h"
+#include "TransientImage.h"
 
-#include <yave/graphics/buffers/Mapping.h>
-
-#include <yave/graphics/descriptors/DescriptorSet.h>
-#include <yave/graphics/framebuffer/Framebuffer.h>
-
-#include "FrameGraphResourceToken.h"
-#include "FrameGraphPass.h"
+#include <y/core/Vector.h>
 
 #include <mutex>
 
 namespace yave {
 
-class FrameGraphResourcePool : NonMovable, public DeviceLinked {
+class FrameGraphResourcePool : NonMovable {
 
-	public:
-		FrameGraphResourcePool(DevicePtr dptr);
-		~FrameGraphResourcePool();
+    public:
+        FrameGraphResourcePool();
+        ~FrameGraphResourcePool();
 
 
-		TransientImage<> create_image(ImageFormat format, const math::Vec2ui& size, ImageUsage usage);
-		TransientBuffer create_buffer(usize byte_size, BufferUsage usage, MemoryType memory);
+        TransientImage<> create_image(ImageFormat format, const math::Vec2ui& size, ImageUsage usage);
+        TransientBuffer create_buffer(usize byte_size, BufferUsage usage, MemoryType memory);
 
-		void release(TransientImage<> image);
-		void release(TransientBuffer buffer);
+        void release(TransientImage<> image);
+        void release(TransientBuffer buffer);
 
-		void garbage_collect();
+        void garbage_collect();
 
-	private:
-		bool create_image_from_pool(TransientImage<>& res, ImageFormat format, const math::Vec2ui& size, ImageUsage usage);
-		bool create_buffer_from_pool(TransientBuffer& res, usize byte_size, BufferUsage usage, MemoryType memory);
+    private:
+        bool create_image_from_pool(TransientImage<>& res, ImageFormat format, const math::Vec2ui& size, ImageUsage usage);
+        bool create_buffer_from_pool(TransientBuffer& res, usize byte_size, BufferUsage usage, MemoryType memory);
 
-		core::Vector<std::pair<TransientImage<>, u64>> _images;
-		core::Vector<std::pair<TransientBuffer, u64>> _buffers;
+        core::Vector<std::pair<TransientImage<>, u64>> _images;
+        core::Vector<std::pair<TransientBuffer, u64>> _buffers;
 
-		u64 _collection_id = 0;
+        u64 _collection_id = 0;
 
-		void audit() const;
+        void audit() const;
 
-		Y_TODO(Find a way to not lock on every method call)
-		std::recursive_mutex _lock;
+        Y_TODO(Find a way to not lock on every method call)
+        std::recursive_mutex _lock;
 };
 
 }
 
 #endif // YAVE_FRAMEGRAPH_FRAMEGRAPHRESOURCEPOOL_H
+

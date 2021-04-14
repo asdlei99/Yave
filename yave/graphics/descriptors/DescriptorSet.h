@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,30 @@ SOFTWARE.
 #define YAVE_GRAPHICS_DESCRIPTORS_DESCRIPTORSET_H
 
 #include "DescriptorSetBase.h"
-#include "DescriptorSetAllocator.h"
+#include "DescriptorSetData.h"
 
 namespace yave {
 
 class DescriptorSet : public DescriptorSetBase, NonCopyable {
 
-	public:
-		DescriptorSet() = default;
+    public:
+        DescriptorSet() = default;
 
-		DescriptorSet(DevicePtr dptr, core::Span<Descriptor> bindings);
-		~DescriptorSet();
+        DescriptorSet(core::Span<Descriptor> bindings);
+        ~DescriptorSet();
 
-		DescriptorSet(DescriptorSet&&);
-		DescriptorSet& operator=(DescriptorSet&&);
+        DescriptorSet(DescriptorSet&& other);
+        DescriptorSet& operator=(DescriptorSet&& other);
 
-		DevicePtr device() const;
-		bool is_null() const;
+        VkDescriptorSetLayout vk_descriptor_set_layout() const;
 
-		VkDescriptorSetLayout vk_descriptor_set_layout() const;
+    private:
+        void swap(DescriptorSet& other);
 
-	private:
-		void swap(DescriptorSet& other);
-
-		DescriptorSetData _data;
+        DescriptorSetData _data;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_DESCRIPTORS_DESCRIPTORSET_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,41 +34,41 @@ SOFTWARE.
 
 namespace yave {
 
-class DeviceMemoryAllocator : NonCopyable, public DeviceLinked {
+class DeviceMemoryAllocator {
 
-	using HeapType = std::pair<u32, MemoryType>;
+    using HeapType = std::pair<u32, MemoryType>;
 
-	static constexpr usize default_heap_size = 128 * 1024 * 1024;
+    static constexpr usize default_heap_size = 128 * 1024 * 1024;
 
-	public:
-		DeviceMemoryAllocator() = default;
-		DeviceMemoryAllocator(DevicePtr dptr);
+    public:
+        DeviceMemoryAllocator();
 
-		DeviceMemory alloc(VkImage image);
-		DeviceMemory alloc(VkBuffer buffer, MemoryType type);
+        DeviceMemory alloc(VkImage image);
+        DeviceMemory alloc(VkBuffer buffer, MemoryType type);
+        DeviceMemory alloc(VkMemoryRequirements reqs, MemoryType type);
 
-		auto heaps() const {
-			return core::Range(_heaps.begin(), _heaps.end());
-		}
+        auto heaps() const {
+            return core::Range(_heaps.begin(), _heaps.end());
+        }
 
-		auto dedicated_heaps() const {
-			return core::Range(_dedicated_heaps.begin(), _dedicated_heaps.end());
-		}
+        auto dedicated_heaps() const {
+            return core::Range(_dedicated_heaps.begin(), _dedicated_heaps.end());
+        }
 
-	private:
-		static usize heap_size_for_type(MemoryType type);
-		static usize dedicated_threshold_for_type(MemoryType type);
+    private:
+        static usize heap_size_for_type(MemoryType type);
+        static usize dedicated_threshold_for_type(MemoryType type);
 
-		DeviceMemory alloc(VkMemoryRequirements reqs, MemoryType type);
-		DeviceMemory dedicated_alloc(VkMemoryRequirements reqs, MemoryType type);
+        DeviceMemory dedicated_alloc(VkMemoryRequirements reqs, MemoryType type);
 
-		core::ExternalHashMap<HeapType, core::Vector<std::unique_ptr<DeviceMemoryHeap>>> _heaps;
-		core::ExternalHashMap<MemoryType, std::unique_ptr<DedicatedDeviceMemoryAllocator>> _dedicated_heaps;
+        core::ExternalHashMap<HeapType, core::Vector<std::unique_ptr<DeviceMemoryHeap>>> _heaps;
+        core::ExternalHashMap<MemoryType, std::unique_ptr<DedicatedDeviceMemoryAllocator>> _dedicated_heaps;
 
-		usize _max_allocs = 0;
-		mutable std::mutex _lock;
+        usize _max_allocs = 0;
+        mutable std::mutex _lock;
 };
 
 }
 
 #endif // YAVE_GRAPHICS_MEMORY_DEVICEMEMORYALLOCATOR_H
+

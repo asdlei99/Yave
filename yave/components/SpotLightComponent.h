@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,54 +23,65 @@ SOFTWARE.
 #define YAVE_COMPONENTS_SPOTLIGHTCOMPONENT_H
 
 #include <yave/ecs/ecs.h>
-#include <yave/utils/serde.h>
+#include <y/reflect/reflect.h>
 
 #include "TransformableComponent.h"
 
 namespace yave {
 
 class SpotLightComponent final : public ecs::RequiredComponents<TransformableComponent> {
-	public:
-		SpotLightComponent() = default;
+    public:
+        struct EnclosingSphere {
+            float dist_to_center;
+            float radius;
+        };
 
-		math::Vec3& color();
-		const math::Vec3& color() const;
+        SpotLightComponent() = default;
 
-		float& intensity();
-		float intensity() const;
 
-		float& radius();
-		float radius() const;
+        EnclosingSphere enclosing_sphere() const;
 
-		float& falloff();
-		float falloff() const;
 
-		float& half_angle();
-		float half_angle() const;
 
-		float& angle_exponent();
-		float angle_exponent() const;
+        math::Vec3& color();
+        const math::Vec3& color() const;
 
-		bool& cast_shadow();
-		bool cast_shadow() const;
+        float& intensity();
+        float intensity() const;
 
-		/*math::Vec2& depth_bias();
-		math::Vec2 depth_bias() const;*/
+        float& radius();
+        float radius() const;
 
-		y_serde3(_color, _intensity, _radius, _falloff, _angle, _angle_exp, _cast_shadow)
+        float& falloff();
+        float falloff() const;
 
-	private:
-		math::Vec3 _color = math::Vec3{1.0f};
-		float _intensity = 1.0f;
-		float _radius = 10.0f;
-		float _falloff = 1.0f;
-		float _angle = math::to_rad(45.0f);
-		float _angle_exp = 2.0f;
+        float& half_angle();
+        float half_angle() const;
 
-		bool _cast_shadow = false;
-		//math::Vec2 _depth_bias;
+        float& angle_exponent();
+        float angle_exponent() const;
+
+        bool& cast_shadow();
+        bool cast_shadow() const;
+
+        u32& shadow_lod();
+        u32 shadow_lod() const;
+
+        y_reflect(_color, _intensity, _radius, _falloff, _half_angle, _angle_exp, _cast_shadow, _shadow_lod)
+
+    private:
+        math::Vec3 _color = math::Vec3{1.0f};
+        float _intensity = 1.0f;
+        float _radius = 10.0f;
+        float _falloff = 1.0f;
+        float _half_angle = math::to_rad(45.0f);
+        float _angle_exp = 2.0f;
+
+        bool _cast_shadow = false;
+        u32 _shadow_lod = 0;
 };
 
 }
 
 #endif // YAVE_COMPONENTS_SPOTLIGHTCOMPONENT_H
+

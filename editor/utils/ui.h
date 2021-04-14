@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,12 +31,25 @@ namespace imgui {
 
 bool should_open_context_menu();
 
-bool asset_selector(ContextPtr ctx, AssetId id, AssetType type, std::string_view text, bool* clear = nullptr);
-bool path_selector(std::string_view text, const core::String& path);
+math::Vec2 client_window_pos();
+math::Vec2 from_client_pos(const math::Vec2& pos);
+
+
+bool asset_selector(AssetId id, AssetType type, std::string_view text, bool* clear = nullptr);
+bool path_selector(const char* text, const core::String& path);
 
 void alternating_rows_background(float line_height = -1.0f, const math::Vec4& color = math::Vec4(20.0f, 20.0f, 20.0f, 48.0f) / 255.0f);
+
+
+bool search_bar(char* buffer, usize buffer_size);
+
+bool begin_suggestion_popup();
+void end_suggestion_popup();
+
+bool suggestion_item(const char* name);
 
 }
 }
 
 #endif // EDITOR_UTILS_UI_H
+

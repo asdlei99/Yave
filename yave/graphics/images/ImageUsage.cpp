@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,54 +22,59 @@ SOFTWARE.
 
 #include "ImageUsage.h"
 
+#include <y/utils/format.h>
+
 namespace yave {
 
-static VkImageLayout vk_layout(ImageUsage usage) {
-	if((usage & ImageUsage::SwapchainBit) != ImageUsage::None) {
-		return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	}
-	if((usage & ImageUsage::StorageBit) != ImageUsage::None) {
-		return VK_IMAGE_LAYOUT_GENERAL;
-	}
-
-	const bool texture = (usage & ImageUsage::TextureBit) != ImageUsage::None;
-	if((usage & ImageUsage::TransferSrcBit) != ImageUsage::None) {
-		return texture ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-	}
-	if((usage & ImageUsage::TransferDstBit) != ImageUsage::None) {
-		return texture ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-	}
-
-	if(texture) {
-		return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-	}
-
-	y_fatal("Undefined image layout.");
-}
-
 VkImageLayout vk_image_layout(ImageUsage usage) {
-	switch(usage) {
-		case ImageUsage::ColorBit:
-			return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    switch(usage) {
+        case ImageUsage::ColorBit:
+            return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		case ImageUsage::DepthBit:
-			return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        case ImageUsage::DepthBit:
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-		case ImageUsage::DepthTexture:
-			return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        case ImageUsage::DepthTexture:
+            return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
-		case ImageUsage::TextureBit:
-			return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        case ImageUsage::TextureBit:
+            return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		case ImageUsage::SwapchainBit:
-			return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        case ImageUsage::SwapchainBit:
+            return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-		default:
-			break;
-	}
+        case ImageUsage::TransferSrcBit:
+            return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-	return vk_layout(usage);
+        case ImageUsage::TransferDstBit:
+            return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+        default:
+            break;
+    }
+
+    if((usage & ImageUsage::SwapchainBit) != ImageUsage::None) {
+        return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    }
+
+    if((usage & ImageUsage::StorageBit) != ImageUsage::None) {
+        return VK_IMAGE_LAYOUT_GENERAL;
+    }
+
+    if((usage & ImageUsage::TextureBit) != ImageUsage::None) {
+        return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    }
+
+    if((usage & ImageUsage::DepthBit) != ImageUsage::None) {
+        return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    }
+
+    if((usage & ImageUsage::ColorBit) != ImageUsage::None) {
+        return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    }
+    
+    y_fatal("Unsupported image usage (%)", usage);
 }
 
-
 }
+

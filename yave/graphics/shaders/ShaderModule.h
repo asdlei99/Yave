@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@ namespace yave {
 template<ShaderType Type>
 class ShaderModule : public ShaderModuleBase {
 
-	static_assert(Type != ShaderType::None, "ShaderModule can not have None Type");
+    static_assert(Type != ShaderType::None, "ShaderModule can not have None Type");
 
-	public:
-		ShaderModule() = default;
+    public:
+        ShaderModule() = default;
 
-		ShaderModule(DevicePtr dptr, const SpirVData& data) : ShaderModuleBase(dptr, data) {
-			if(type() != ShaderType::None && type() != Type) {
-				y_fatal("Spirv data doesn't match ShaderModule Type.");
-			}
-		}
+        ShaderModule(const SpirVData& data) : ShaderModuleBase(data) {
+            if(type() != ShaderType::None && type() != Type) {
+                y_fatal("Spirv data doesn't match ShaderModule Type.");
+            }
+        }
 };
 
 using FragmentShader = ShaderModule<ShaderType::Fragment>;
@@ -49,3 +49,4 @@ using ComputeShader = ShaderModule<ShaderType::Compute>;
 }
 
 #endif // YAVE_GRAPHICS_SHADERS_SHADERMODULE_H
+

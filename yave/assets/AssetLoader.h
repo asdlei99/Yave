@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ SOFTWARE.
 
 #include <y/core/HashMap.h>
 
-#include <yave/device/DeviceLinked.h>
+#include <yave/graphics/graphics.h>
 
 #include "AssetStore.h"
 #include "AssetLoadingContext.h"
@@ -37,115 +37,120 @@ namespace yave {
 
 class AssetLoadingContext;
 
-class AssetLoader : NonMovable, public DeviceLinked {
-	public:
-		 using ErrorType = AssetLoadingErrorType;
+class AssetLoader : NonMovable {
+    public:
+         using ErrorType = AssetLoadingErrorType;
 
-		 template<typename T>
-		 using Result = core::Result<AssetPtr<T>, ErrorType>;
+         template<typename T>
+         using Result = core::Result<AssetPtr<T>, ErrorType>;
 
-	private:
-		using LoadingJob = AssetLoadingThreadPool::LoadingJob;
+    private:
+        using LoadingJob = AssetLoadingThreadPool::LoadingJob;
 
-		class LoaderBase : NonMovable {
-			public:
-				virtual ~LoaderBase();
+        class LoaderBase : NonMovable {
+            public:
+                virtual ~LoaderBase();
 
-				AssetLoader* parent() const;
+                AssetLoader* parent() const;
 
-				virtual AssetType type() const = 0;
+                virtual AssetType type() const = 0;
 
-			protected:
-				LoaderBase(AssetLoader* parent);
+            protected:
+                LoaderBase(AssetLoader* parent);
 
-			private:
+            private:
 
-				AssetLoader* _parent = nullptr;
-		};
+                AssetLoader* _parent = nullptr;
+        };
 
 
-		template<typename T>
-		class Loader final : public LoaderBase {
-			using Data = typename AssetPtr<T>::Data;
-			using WeakAssetPtr = std::weak_ptr<Data>;
+        template<typename T>
+        class Loader final : public LoaderBase {
+            using Data = typename AssetPtr<T>::Data;
+            using WeakAssetPtr = std::weak_ptr<Data>;
 
-			using traits = AssetTraits<T>;
-			static_assert(traits::is_asset, "Type is missing asset traits");
+            static_assert(sizeof(T) > 0, "Type is not defined");
 
-			using LoadFrom = typename traits::load_from;
+            using traits = AssetTraits<T>;
+            static_assert(traits::is_asset, "Type is missing asset traits");
 
-			public:
-				Loader(AssetLoader* parent);
-				~Loader();
+            using LoadFrom = typename traits::load_from;
 
-				inline AssetPtr<T> load(AssetId id);
-				inline AssetPtr<T> load_async(AssetId id);
+            public:
+                Loader(AssetLoader* parent);
+                ~Loader();
 
-				inline AssetPtr<T> reload(const AssetPtr<T>& ptr);
+                inline AssetPtr<T> load(AssetId id);
+                inline AssetPtr<T> load_async(AssetId id);
 
-				AssetType type() const {
-					return traits::type;
-				}
+                inline AssetPtr<T> reload(const AssetPtr<T>& ptr);
 
-			private:
-				[[nodiscard]] inline bool find_ptr(AssetPtr<T>& ptr);
-				inline std::unique_ptr<LoadingJob> create_loading_job(AssetPtr<T> ptr);
+                AssetType type() const {
+                    return traits::type;
+                }
 
-				core::ExternalHashMap<AssetId, WeakAssetPtr> _loaded;
-				std::recursive_mutex _lock;
-		};
+            private:
+                [[nodiscard]] inline bool find_ptr(AssetPtr<T>& ptr);
+                inline std::unique_ptr<LoadingJob> create_loading_job(AssetPtr<T> ptr);
+
+                core::ExternalHashMap<AssetId, WeakAssetPtr> _loaded;
+                std::recursive_mutex _lock;
+        };
 
    public:
-		AssetLoader(DevicePtr dptr, const std::shared_ptr<AssetStore>& store, AssetLoadingFlags flags = AssetLoadingFlags::None, usize concurency = 1);
-		~AssetLoader();
+        Y_TODO(make configurable)
+        static constexpr bool fail_on_partial_deser = false;
 
-		AssetStore& store();
-		const AssetStore& store() const;
+        AssetLoader(const std::shared_ptr<AssetStore>& store, AssetLoadingFlags flags = AssetLoadingFlags::None, usize concurency = 1);
+        ~AssetLoader();
 
-		void set_loading_flags(AssetLoadingFlags flags);
-		AssetLoadingFlags loading_flags() const;
+        AssetStore& store();
+        const AssetStore& store() const;
 
-		// This is dangerous: Do not call in loading threads!
-		void wait_until_loaded(const GenericAssetPtr& ptr);
+        void set_loading_flags(AssetLoadingFlags flags);
+        AssetLoadingFlags loading_flags() const;
+
+        // This is dangerous: Do not call in loading threads!
+        void wait_until_loaded(const GenericAssetPtr& ptr);
 
 
-		template<typename T>
-		inline Result<T> load_res(AssetId id);
-		template<typename T>
-		inline Result<T> load_res(std::string_view name);
+        template<typename T>
+        inline Result<T> load_res(AssetId id);
+        template<typename T>
+        inline Result<T> load_res(std::string_view name);
 
-		template<typename T>
-		inline AssetPtr<T> load(AssetId id);
-		template<typename T>
-		inline AssetPtr<T> load_async(AssetId id);
+        template<typename T>
+        inline AssetPtr<T> load(AssetId id);
+        template<typename T>
+        inline AssetPtr<T> load_async(AssetId id);
 
-		template<typename T>
-		inline AssetPtr<T> reload(const AssetPtr<T>& ptr);
+        template<typename T>
+        inline AssetPtr<T> reload(const AssetPtr<T>& ptr);
 
-		template<typename T>
-		inline Result<T> import(std::string_view name, std::string_view import_from);
+        template<typename T>
+        inline Result<T> import(std::string_view name, std::string_view import_from);
 
    private:
-		template<typename T>
-		friend class Loader;
+        template<typename T>
+        friend class Loader;
 
-		friend class AssetLoadingContext;
+        friend class AssetLoadingContext;
 
-		template<typename T, typename E>
-		inline Result<T> load(core::Result<AssetId, E> id);
+        template<typename T, typename E>
+        inline Result<T> load(core::Result<AssetId, E> id);
 
-		template<typename T>
-		inline Loader<T>& loader_for_type();
+        template<typename T>
+        inline Loader<T>& loader_for_type();
 
-		core::Result<AssetId> load_or_import(std::string_view name, std::string_view import_from, AssetType type);
+        core::Result<AssetId> load_or_import(std::string_view name, std::string_view import_from, AssetType type);
 
-		core::ExternalHashMap<std::type_index, std::unique_ptr<LoaderBase>> _loaders;
-		std::shared_ptr<AssetStore> _store;
+        core::ExternalHashMap<std::type_index, std::unique_ptr<LoaderBase>> _loaders;
+        std::shared_ptr<AssetStore> _store;
 
-		std::recursive_mutex _lock;
-		AssetLoadingThreadPool _thread_pool;
+        std::recursive_mutex _lock;
+        AssetLoadingThreadPool _thread_pool;
 
-		std::atomic<AssetLoadingFlags> _loading_flags = AssetLoadingFlags::None;
+        std::atomic<AssetLoadingFlags> _loading_flags = AssetLoadingFlags::None;
 };
 
 }
@@ -154,3 +159,4 @@ class AssetLoader : NonMovable, public DeviceLinked {
 #include "AssetLoader.inl"
 
 #endif // YAVE_ASSETS_ASSETLOADER_H
+

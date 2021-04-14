@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@ SOFTWARE.
 #ifndef Y_DEFINES_H
 #define Y_DEFINES_H
 
+
 namespace y {
 [[noreturn]] void fatal(const char* msg, const char* file = nullptr, int line = 0);
 void break_in_debugger();
@@ -30,10 +31,6 @@ void break_in_debugger();
 
 
 #define Y_TODO(...) /* __VA_ARGS__ */
-
-#if defined(NDEBUG) && !defined(Y_DEBUG)
-#define Y_DEBUG
-#endif
 
 #if defined(Y_NO_DEBUG) && defined(Y_DEBUG)
 #undef Y_DEBUG
@@ -52,11 +49,13 @@ void break_in_debugger();
 
 #define y_fwd(var) std::forward<decltype(var)>(var)
 
+namespace y {
 #ifdef Y_DEBUG
-#ifndef Y_PERF_LOG_DISABLED
-#define Y_PERF_LOG_ENABLED
+static constexpr bool is_debug_defined = true;
+#else
+static constexpr bool is_debug_defined = false;
 #endif
-#endif
+}
 
 
 /****************** OS DEFINES BELOW ******************/
@@ -71,16 +70,23 @@ void break_in_debugger();
 
 #endif
 
-#ifdef _MSC_VER
-#define Y_MSVC
-#endif
-
 #if defined(__linux__) || defined(__gnu_linux__)
 #define Y_OS_LINUX
 #endif
 
+#ifdef _MSC_VER
+#define Y_MSVC
+// Disable warning about "defined" in macro expansion (happens in windows.h)
+#pragma warning(disable : 5105)
+#endif
 
+#ifdef __GNUC__
+#define Y_GCC
+#endif
 
+#ifdef __clang__
+#define Y_CLANG
+#endif
 
 
 #ifdef Y_DEBUG
@@ -98,11 +104,7 @@ void break_in_debugger();
 #define y_create_name y_create_name_with_prefix()
 
 
-#ifdef Y_MSVC
-#define Y_FUNCTION_NAME __FUNCSIG__
-#else
-#define Y_FUNCTION_NAME __PRETTY_FUNCTION__
-#endif
+
 
 
 // For some reason gcc 9.2 accepts even in C++17
@@ -114,3 +116,4 @@ void break_in_debugger();
 
 
 #endif // Y_DEFINES_H
+

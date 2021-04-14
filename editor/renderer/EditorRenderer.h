@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +22,35 @@ SOFTWARE.
 #ifndef EDITOR_RENDERER_EDITORRENDERER_H
 #define EDITOR_RENDERER_EDITORRENDERER_H
 
-#include "EditorEntityPass.h"
+#include <editor/editor.h>
+
+#include <yave/renderer/DefaultRenderer.h>
 
 namespace editor {
 
 struct EditorRendererSettings {
-	RendererSettings renderer_settings;
+    RendererSettings renderer_settings;
 
-	bool enable_editor_entities = true;
-	float billboard_size = 64.0f;
+    bool show_editor_entities = true;
+    bool show_selection = true;
+    float billboard_size = 64.0f;
 };
 
 
 struct EditorRenderer {
-	DefaultRenderer renderer;
-	EditorEntityPass entity_pass;
+    DefaultRenderer renderer;
 
-	FrameGraphImageId color;
-	FrameGraphImageId depth;
+    FrameGraphImageId id;
+    FrameGraphImageId final;
+    FrameGraphImageId depth;
 
-	static EditorRenderer create(ContextPtr ctx,
-								 FrameGraph& framegraph, const SceneView& view, const math::Vec2ui& size,
-								 const std::shared_ptr<IBLProbe>& ibl_probe, const EditorRendererSettings& settings = EditorRendererSettings());
+    static EditorRenderer create(FrameGraph& framegraph,
+                                 const SceneView& view,
+                                 const math::Vec2ui& size,
+                                 const EditorRendererSettings& settings = EditorRendererSettings());
 };
 
 }
 
 #endif // EDITOR_RENDERER_EDITORRENDERER_H
+

@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,35 @@ SOFTWARE.
 #define EDITOR_COMPONENTS_EDITORCOMPONENT_H
 
 #include <editor/editor.h>
-#include <yave/ecs/ecs.h>
 
-#include <yave/utils/serde.h>
 #include <y/core/String.h>
+#include <y/reflect/reflect.h>
 
 namespace editor {
 
 class EditorComponent {
-	public:
-		EditorComponent() = default;
-		EditorComponent(std::string_view name);
+    public:
+        EditorComponent() = default;
+        EditorComponent(core::String name);
 
-		const core::String& name() const;
-		void set_name(core::String name);
+        const core::String& name() const;
+        void set_name(core::String name);
 
-		math::Vec3& euler();
+        math::Vec3& euler();
 
-		y_serde3(_name)
+        void set_hidden_in_editor(bool hide);
+        bool is_hidden_in_editor() const;
 
-	private:
-		core::String _name = "Unnamed entity";
-		math::Vec3 _euler;
+        y_reflect(_name, _hide_in_editor)
+
+    private:
+        core::String _name = "Unnamed entity";
+        math::Vec3 _euler;
+
+        bool _hide_in_editor = false;
 };
 
 }
 
 #endif // EDITOR_COMPONENTS_EDITORCOMPONENT_H
+

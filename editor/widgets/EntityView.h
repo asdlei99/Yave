@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,26 +22,30 @@ SOFTWARE.
 #ifndef EDITOR_WIDGETS_ENTITYVIEW_H
 #define EDITOR_WIDGETS_ENTITYVIEW_H
 
-#include <editor/ui/Widget.h>
-#include <yave/ecs/EntityId.h>
+#include <editor/Widget.h>
+
+#include <yave/ecs/ComponentRuntimeInfo.h>
+
 
 namespace editor {
 
-class EntityView final : public Widget, public ContextLinked {
-	public:
-		EntityView(ContextPtr cptr);
+class EntityView final : public Widget {
 
-	private:
-		void paint_ui(CmdBufferRecorder&, const FrameToken&) override;
+    editor_widget_open(EntityView, "View")
 
-		void paint_view();
-		void paint_clustered_view();
+    public:
+        EntityView();
 
-		ecs::EntityId _hovered;
+    protected:
+        void on_gui() override;
 
-		bool _clustered_view = true;
+    private:
+        void paint_view();
+
+        ecs::EntityId _hovered;
 };
 
 }
 
 #endif // EDITOR_WIDGETS_ENTITYVIEW_H
+

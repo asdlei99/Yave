@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,48 +26,73 @@ SOFTWARE.
 namespace yave {
 
 SimpleMaterialData::SimpleMaterialData(std::array<AssetPtr<Texture>, texture_count>&& textures) :
-		_textures(std::move(textures)) {
+        _textures(std::move(textures)) {
 }
 
 SimpleMaterialData& SimpleMaterialData::set_texture(Textures type, AssetPtr<Texture> tex) {
-	_textures[usize(type)] = std::move(tex);
-	return *this;
+    _textures[usize(type)] = std::move(tex);
+    return *this;
 }
 
 SimpleMaterialData& SimpleMaterialData::set_texture_reset_constants(Textures type, AssetPtr<Texture> tex) {
-	switch(type) {
-		case Roughness:
-			_constants.roughness_mul = 1.0f;
-		break;
+    switch(type) {
+        case Roughness:
+            _constants.roughness_mul = 1.0f;
+        break;
 
-		case Metallic:
-			_constants.metallic_mul = 1.0f;
-		break;
+        case Metallic:
+            _constants.metallic_mul = 1.0f;
+        break;
 
-		default:
-		break;
-	}
+        case Emissive:
+            _constants.emissive_mul = tex.is_empty() ? 0.0f : 1.0f;
+        break;
 
-	return set_texture(type, std::move(tex));
+        default:
+        break;
+    }
+
+    return set_texture(type, std::move(tex));
 }
 
 bool SimpleMaterialData::is_empty() const {
-	return std::all_of(_textures.begin(), _textures.end(), [](const auto& tex) { return tex.is_empty(); });
+    return std::all_of(_textures.begin(), _textures.end(), [](const auto& tex) { return tex.is_empty(); });
 }
 
 const AssetPtr<Texture>& SimpleMaterialData::operator[](Textures tex) const {
-	return _textures[usize(tex)];
+    return _textures[usize(tex)];
 }
 
 const std::array<AssetPtr<Texture>, SimpleMaterialData::texture_count>& SimpleMaterialData::textures() const {
-	return  _textures;
+    return  _textures;
 }
 
 std::array<AssetId, SimpleMaterialData::texture_count> SimpleMaterialData::texture_ids() const {
-	std::array<AssetId, texture_count> ids;
-	std::transform(_textures.begin(), _textures.end(), ids.begin(), [](const auto& tex) { return tex.id(); });
-	return ids;
+    std::array<AssetId, texture_count> ids;
+    std::transform(_textures.begin(), _textures.end(), ids.begin(), [](const auto& tex) { return tex.id(); });
+    return ids;
 }
 
 
+const SimpleMaterialData::Contants& SimpleMaterialData::constants() const {
+    return _constants;
 }
+
+SimpleMaterialData::Contants& SimpleMaterialData::constants() {
+    return _constants;
+}
+
+bool SimpleMaterialData::alpha_tested() const {
+    return _alpha_tested;
+}
+
+bool& SimpleMaterialData::alpha_tested() {
+    return _alpha_tested;
+}
+
+bool SimpleMaterialData::has_emissive() const {
+    return !_textures[Textures::Emissive].is_empty() || !_constants.emissive_mul.is_zero();
+}
+
+}
+

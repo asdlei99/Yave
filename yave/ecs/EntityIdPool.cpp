@@ -1,5 +1,5 @@
 /*******************************
-Copyright (c) 2016-2020 Grégoire Angerand
+Copyright (c) 2016-2021 Grégoire Angerand
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,88 +25,43 @@ SOFTWARE.
 namespace yave {
 namespace ecs {
 
-EntityIdPool::EntityIdPool() {
-	_ids.emplace_back();
-}
-
-core::Result<void> EntityIdPool::create_with_index(EntityIndex index) {
-	y_debug_assert(EntityId::from_unversioned_index(index).is_valid());
-	_ids.set_min_capacity(index + 1);
-	while(usize(index + 1) >= _ids.size()) {
-		_ids.emplace_back();
-	}
-
-	if(!_ids[index].is_valid()) {
-		_ids[index].set(index);
-
-		if(const auto it = std::find(_free.begin(), _free.end(), index); it != _free.end()) {
-			_free.erase_unordered(it);
-		}
-		++_size;
-		return core::Ok();
-	}
-
-	return core::Err();
+usize EntityIdPool::size() const {
+    return _ids.size() - _free.size();
 }
 
 bool EntityIdPool::contains(EntityId id) const {
-	auto index = id.index();
-	return index < _ids.size() && _ids[index] == id;
+    return id.is_valid() &&
+           id.index() < _ids.size() &&
+           _ids[id.index()] == id;
 }
 
-EntityId EntityIdPool::id_from_index(EntityIndex index) const {
-	if(index >= _ids.size()) {
-		return EntityId::from_unversioned_index(index);
-	}
-	return _ids[index];
+EntityId EntityIdPool::id_from_index(u32 index) const {
+    if(index >= _ids.size() || !_ids[index].is_valid()) {
+        return EntityId();
+    }
+    return _ids[index];
 }
 
 EntityId EntityIdPool::create() {
-	++_size;
-	if(!_free.is_empty()) {
-		EntityIndex index = _free.pop();
-		_ids[index].set(index);
-		return _ids[index];
-	}
+    if(_free.is_empty()) {
+        const usize index = _ids.size();
+        _ids.emplace_back(EntityId(u32(index)));
+        return _ids.last();
+    }
 
-	y_debug_assert(!_ids.is_empty());
-	const EntityIndex index = EntityIndex(_ids.size() - 1);
-	_ids.last().set(index);
-	_ids.emplace_back();
-	return _ids[index];
+    const u32 index = _free.pop();
+    _ids[index].make_valid(index);
+    return _ids[index];
 }
+
 
 void EntityIdPool::recycle(EntityId id) {
-	y_debug_assert(id.is_valid());
-	_free.push_back(id._index);
-	if(_ids[id._index].is_valid()) {
-		_ids[id._index].clear();
-		y_debug_assert(_size != 0);
-		--_size;
-	}
+    y_debug_assert(contains(id));
+    _ids[id.index()].invalidate();
+    _free << id.index();
 }
 
-EntityIdPool::iterator EntityIdPool::begin() {
-	return _ids.begin();
-}
-
-EntityIdPool::iterator EntityIdPool::end() {
-	y_debug_assert(_ids.last() == EntityId());
-	return _ids.end() - 1;
-}
-
-EntityIdPool::const_iterator EntityIdPool::begin() const {
-	return _ids.begin();
-}
-
-EntityIdPool::const_iterator EntityIdPool::end() const {
-	y_debug_assert(_ids.last() == EntityId());
-	return _ids.end() - 1;
-}
-
-usize EntityIdPool::size() const {
-	return _size;
-}
 
 }
 }
+
