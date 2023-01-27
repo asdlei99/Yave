@@ -25,11 +25,14 @@ SOFTWARE.
 #include <yave/ecs/ecs.h>
 
 #include <y/core/String.h>
+#include <y/core/Vector.h>
+
+#include <functional>
 
 namespace yave {
 namespace ecs {
 
-class System : NonCopyable {
+class System : NonMovable {
     public:
         System(core::String name, float fixed_update_time = 0.0f) : _name(std::move(name)), _fixed_update_time(fixed_update_time) {
         }
@@ -40,23 +43,15 @@ class System : NonCopyable {
             return _name;
         }
 
-        virtual void tick(EntityWorld& world) {
-            // nothing
-        }
-
-        virtual void update(EntityWorld& world, float dt) {
-            // nothing
-        }
-
-        virtual void fixed_update(EntityWorld& world, float dt) {
-            // nothing
-        }
-
         virtual void setup(EntityWorld&) {
             // nothing
         }
 
         virtual void destroy(EntityWorld&) {
+            // nothing
+        }
+
+        virtual void update(EntityWorld&, float) {
             // nothing
         }
 
@@ -69,7 +64,7 @@ class System : NonCopyable {
             return _fixed_update_time;
         }
 
-        void schedule_fixed_update(EntityWorld& world, float dt) {
+        /*void schedule_fixed_update(EntityWorld& world, float dt) {
             if(_fixed_update_time <= 0.0f) {
                 if(_fixed_update_time > -1.0f) {
                     fixed_update(world, dt);
@@ -82,12 +77,25 @@ class System : NonCopyable {
                 fixed_update(world, _fixed_update_time);
                 _fixed_update_acc -= _fixed_update_time;
             }
-        }
+        }*/
+
+
+    protected:
+        // EntityWorld.inl
+        template<typename F, typename FI = nullptr_t>
+        void add_tick_function(F&& func, FI&& id_func = nullptr);
+
 
     private:
+        friend class EntityWorld;
+
         core::String _name;
         float _fixed_update_time = 0.0f;
         float _fixed_update_acc = 0.0f;
+
+        EntityWorld* _world = nullptr;
+
+        core::Vector<std::function<void(EntityWorld&)>> _tick;
 };
 
 }

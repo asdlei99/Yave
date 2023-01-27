@@ -93,6 +93,23 @@ void ComponentBox<T>::add_to(EntityWorld& world, EntityId id) const {
     world.add_component<T>(id, _component);
 }
 
+
+template<typename F, typename FI>
+void System::add_tick_function(F&& func, FI&& id_func) {
+    _tick.emplace_back([=](EntityWorld& world) {
+        if constexpr(!std::is_same_v<FI, nullptr_t>) {
+            const auto ids = id_func();
+            QueryBuilder builder(world, ids);
+            func(builder);
+        } else {
+            QueryBuilder builder(world);
+            func(builder);
+        }
+
+    });
+}
+
+
 }
 }
 

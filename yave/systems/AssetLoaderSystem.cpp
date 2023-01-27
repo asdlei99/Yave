@@ -31,10 +31,9 @@ AssetLoaderSystem::AssetLoaderSystem(AssetLoader& loader) : ecs::System("AssetLo
 
 void AssetLoaderSystem::setup(ecs::EntityWorld& world) {
     run_tick(world, false);
-}
-
-void AssetLoaderSystem::tick(ecs::EntityWorld& world) {
-    run_tick(world, true);
+    add_tick_function([this](ecs::EntityWorld& world) {
+        run_tick(world, true);
+    });
 }
 
 void AssetLoaderSystem::run_tick(ecs::EntityWorld& world, bool only_recent) {

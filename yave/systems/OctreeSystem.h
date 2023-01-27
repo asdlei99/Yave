@@ -36,14 +36,11 @@ class OctreeSystem : public ecs::System {
 
         void destroy(ecs::EntityWorld& world) override;
         void setup(ecs::EntityWorld& world) override;
-        void tick(ecs::EntityWorld& world) override;
 
         const OctreeNode& root() const;
         const Octree& octree() const;
 
     private:
-        void run_tick(ecs::EntityWorld& world, bool only_recent);
-
         Octree _tree;
 };
 

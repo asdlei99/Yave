@@ -51,20 +51,10 @@ void OctreeSystem::destroy(ecs::EntityWorld& world) {
 }
 
 void OctreeSystem::setup(ecs::EntityWorld& world) {
-    run_tick(world, false);
-}
-
-void OctreeSystem::tick(ecs::EntityWorld& world) {
-    run_tick(world, true);
-}
-
-void OctreeSystem::run_tick(ecs::EntityWorld& world, bool only_recent) {
-    y_profile();
-
-    {
+    add_tick_function([this](ecs::Query<ecs::Changed<TransformableComponent>> query) {
         y_profile_zone("updating moved objects");
         usize insertions = 0;
-        for(auto&& [id, comp] : world.query<TransformableComponent>(transformable_ids(world, only_recent))) {
+        for(auto&& [id, comp] : query) {
             auto&& [tr] = comp;
 
             if(tr.local_aabb().is_empty()) {
@@ -85,20 +75,18 @@ void OctreeSystem::run_tick(ecs::EntityWorld& world, bool only_recent) {
         }
 
         unused(insertions);
-        y_profile_msg(fmt_c_str("%/% objects reinserted", insertions, transformable_ids(world, only_recent).size()));
-    }
+        y_profile_msg(fmt_c_str("% objects reinserted", insertions));
+    });
 
-    if(only_recent) {
-        for(auto&& [id, comp] : world.query<TransformableComponent>(world.to_be_removed<TransformableComponent>())) {
+    add_tick_function([](ecs::Query<ecs::Removed<TransformableComponent>> query) {
+        for(auto&& [id, comp] : query) {
             auto&& [tr] = comp;
 
             if(tr._node) {
                 tr._node->remove(id);
             }
         }
-    }
-
-    _tree.audit();
+    });
 }
 
 const OctreeNode& OctreeSystem::root() const {

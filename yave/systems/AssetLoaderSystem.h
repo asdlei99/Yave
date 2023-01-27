@@ -34,7 +34,6 @@ class AssetLoaderSystem : public ecs::System {
         AssetLoaderSystem(AssetLoader& loader);
 
         void setup(ecs::EntityWorld& world) override;
-        void tick(ecs::EntityWorld& world) override;
 
         core::Span<ecs::EntityId> recently_loaded() const;
 

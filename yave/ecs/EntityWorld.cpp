@@ -101,7 +101,9 @@ void EntityWorld::tick() {
         y_profile_zone("tick");
         for(auto& system : _systems) {
             y_profile_dyn_zone(system->name().data());
-            system->tick(*this);
+            for(const auto& func : system->_tick) {
+                func(*this);
+            }
         }
     }
 
@@ -120,7 +122,7 @@ void EntityWorld::update(float dt) {
     for(auto& system : _systems) {
         y_profile_dyn_zone(system->name().data());
         system->update(*this, dt);
-        system->schedule_fixed_update(*this, dt);
+        // system->schedule_fixed_update(*this, dt);
     }
 }
 
@@ -211,7 +213,7 @@ core::Span<EntityId> EntityWorld::recently_mutated(ComponentTypeIndex type_id) c
 }
 
 core::Span<EntityId> EntityWorld::to_be_removed(ComponentTypeIndex type_id) const {
-    return find_container(type_id)->to_be_removed();
+    return find_container(type_id)->to_be_removed().ids();
 }
 
 core::Span<EntityId> EntityWorld::with_tag(const core::String& tag) const {

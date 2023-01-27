@@ -83,11 +83,13 @@ class EntityWorld {
 
         template<typename S, typename... Args>
         S* add_system(Args&&... args) {
+            static_assert(std::is_base_of_v<System, S>);
             auto s = std::make_unique<S>(y_fwd(args)...);
             S* system = s.get();
-            _systems.emplace_back(std::move(s));
+            system->_world = this;
             register_component_types(system);
             system->setup(*this);
+            _systems.emplace_back(std::move(s));
             return system;
         }
 
@@ -345,6 +347,8 @@ class EntityWorld {
         template<typename T>
         friend class ComponentContainer;
 
+        friend class System;
+
 
         template<typename T>
         const ComponentContainerBase* find_container() const {
@@ -418,7 +422,6 @@ class EntityWorld {
             return matches;
         }
 
-
         template<typename T, typename... Args>
         void dirty_mutated_containers(core::Span<EntityId> mutated) {
             if(mutated.is_empty()) {
@@ -436,7 +439,6 @@ class EntityWorld {
         }
 
 
-
         const SparseIdSet* raw_tag_set(const core::String& tag) const;
 
         const ComponentContainerBase* find_container(ComponentTypeIndex type_id) const;
@@ -445,7 +447,6 @@ class EntityWorld {
         void register_component_types(System* system) const;
 
         void check_exists(EntityId id) const;
-
 
         core::Vector<std::unique_ptr<ComponentContainerBase>> _containers;
         core::FlatHashMap<core::String, SparseIdSet> _tags;
@@ -456,6 +457,47 @@ class EntityWorld {
         core::Vector<std::unique_ptr<System>> _systems;
         core::Vector<std::unique_ptr<WorldComponentContainerBase>> _world_components;
 };
+
+
+class QueryBuilder {
+    public:
+        QueryBuilder(EntityWorld& world) : _world(world) {
+        }
+
+        QueryBuilder(EntityWorld& world, core::Span<EntityId> ids) : _world(world), _ids(ids), _with_ids(true) {
+        }
+
+        template<typename... Args>
+        operator Query<Args...>() {
+            if(_with_ids) {
+                return _world.query<Args...>(_ids);
+            }
+            return _world.query<Args...>();
+        }
+
+        template<typename... Args>
+        operator Query<Args...>() const {
+            const EntityWorld& const_world = _world;
+            if(_with_ids) {
+                return const_world.query<Args...>(_ids);
+            }
+            return const_world.query<Args...>();
+        }
+
+        operator EntityWorld&() {
+            return _world;
+        }
+
+        operator const EntityWorld&() const {
+            return _world;
+        }
+
+    private:
+        EntityWorld& _world;
+        core::Span<EntityId> _ids;
+        bool _with_ids = false;
+};
+
 
 }
 }
