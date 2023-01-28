@@ -46,7 +46,6 @@ void AABBUpdateSystem::setup(ecs::EntityWorld& world) {
         }
         _aabbs.clear();
     }, [this]() {
-        log_msg(fmt("% aabbs to update", _aabbs.size()));
         return _aabbs.ids();
     });
 }
